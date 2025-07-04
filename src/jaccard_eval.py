@@ -7,6 +7,8 @@ import seaborn as sns
 from pathlib import Path
 import json
 
+from config import Config
+
 
 class JaccardEvaluator:
     
@@ -419,7 +421,7 @@ if __name__ == "__main__":
     })
     
     try:
-        results = run_evaluation_pipeline(df=test_df, gemini_api_key="YOUR_API_KEY_HERE")
+        results = run_evaluation_pipeline(df=test_df, gemini_api_key=Config.GEMINI_API_KEY)
         print("Test evaluation completed successfully!")
     except Exception as e:
         print(f"Error during evaluation: {e}")
