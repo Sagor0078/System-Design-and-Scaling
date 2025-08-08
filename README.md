@@ -1,4 +1,6 @@
-## A solid roadmap for becoming a true backend scaling & systems design master
+## Roadmap to Mastering Backend Scaling & System Design
+
+This roadmap takes you from core fundamentals to advanced distributed systems, blending theory, hands-on projects, and real-world architecture patterns so you can confidently handle systems at any scale.
 
 ## Scaling & Architecture
 
@@ -122,9 +124,9 @@ Hands-On
 3. Implement rate limiting using Redis
 
 Resources
-- System Design Primer
-- High Scalability Blog
-- Cloudflare CDN Guide
+- [System Design Primer](https://github.com/donnemartin/system-design-primer)
+- [High Scalability Blog](http://highscalability.com/)
+- [Cloudflare CDN Guide](https://www.cloudflare.com/learning/cdn/what-is-a-cdn/)
 
 ### Month 2 – Databases & Storage
 
@@ -150,8 +152,8 @@ Hands-On
 
 Resources
 - Designing Data-Intensive Applications (DDIA) – Chapters 1-5
-- PostgreSQL Replication Docs
-- MongoDB Sharding Guide
+- [PostgreSQL Replication Docs](https://www.postgresql.org/docs/current/warm-standby.html)
+- [MongoDB Sharding Guide](https://www.mongodb.com/docs/manual/sharding/)
 
 ### Month 3 – Asynchronous Processing & Messaging
 
@@ -178,9 +180,9 @@ Hands-On
 
 Resources
 
-- RabbitMQ Tutorial
-- Kafka Streams Guide
-- Service Mesh Intro – Istio
+- [RabbitMQ Tutorial](https://www.rabbitmq.com/tutorials/tutorial-one-python.html)
+- [Kafka Streams Guide](https://kafka.apache.org/documentation/streams/)
+- [Service Mesh Intro – Istio](https://istio.io/latest/about/service-mesh/)
 
 ### Month 4 – Reliability, Observability & Fault Tolerance
 
@@ -207,9 +209,9 @@ Hands-On
 
 Resources
 
-- Google SRE Book – Chapters 3, 4, 6
-- Prometheus Docs
-- Chaos Engineering Principles
+- [Google SRE Book – Chapters 3, 4, 6](https://sre.google/)
+- [Prometheus Docs](https://prometheus.io/docs/introduction/overview/)
+- [Chaos Engineering Principles](https://principlesofchaos.org/)
 
 ### Month 5 – Advanced Distributed Systems
 
@@ -234,9 +236,9 @@ Hands-On
 
 Resources
 
-- Raft Visualization
+- [Raft Visualization](https://raft.github.io/)
 - Distributed Systems: Principles and Paradigms – Tanenbaum
-- Microservices.io Patterns
+- [Microservices.io Patterns](https://microservices.io/)
 
 ### Month 6 – Real-World Scale Architecture
 
@@ -264,9 +266,9 @@ Hands-On – Capstone Project
 
 Resources
 
-- AWS Architecture Blog
-- Netflix Tech Blog
-- Uber Engineering Blog
+- [AWS Architecture Blog](https://aws.amazon.com/architecture/)
+- [Netflix Tech Blog](https://netflixtechblog.com/)
+- [Uber Engineering Blog](https://eng.uber.com/)
 
 ### Mastery Workflow
 
