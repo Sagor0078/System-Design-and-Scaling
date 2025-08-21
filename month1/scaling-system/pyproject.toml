@@ -1,0 +1,10 @@
+[project]
+name = "scaling-system"
+version = "0.1.0"
+description = "Building Scalable Systems: With FastAPI, Nginx, Redis and Docker"
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "fastapi[standard]>=0.116.1",
+    "redis>=6.1.1",
+]
