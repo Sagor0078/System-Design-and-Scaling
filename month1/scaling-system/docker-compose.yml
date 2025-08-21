@@ -1,0 +1,81 @@
+version: '3.8'
+
+services:
+  # Redis for caching and rate limiting
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    networks:
+      - app_network
+
+  # FastAPI application instances
+  app1:
+    build: ./app
+    container_name: app1
+    environment:
+      - SERVER_ID=app-server-1
+      - REDIS_HOST=redis
+    depends_on:
+      - redis
+    networks:
+      - app_network
+
+  app2:
+    build: ./app
+    container_name: app2
+    environment:
+      - SERVER_ID=app-server-2
+      - REDIS_HOST=redis
+    depends_on:
+      - redis
+    networks:
+      - app_network
+
+  app3:
+    build: ./app
+    container_name: app3
+    environment:
+      - SERVER_ID=app-server-3
+      - REDIS_HOST=redis
+    depends_on:
+      - redis
+    networks:
+      - app_network
+
+  # Load balancer
+  load-balancer:
+    image: nginx:alpine
+    container_name: load-balancer
+    volumes:
+      - ./nginx/load-balancer.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - app1
+      - app2
+      - app3
+    networks:
+      - app_network
+
+  # API Gateway
+  api-gateway:
+    image: nginx:alpine
+    container_name: api-gateway
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx/api-gateway.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - load-balancer
+    networks:
+      - app_network
+
+volumes:
+  redis_data:
+
+networks:
+  app_network:
+    driver: bridge
