@@ -1,6 +1,7 @@
 ## Architecture Overview
 
-Client → API Gateway (Nginx) → Load Balancer (Nginx) → FastAPI App Instances → Redis Cache
+<!-- Client → API Gateway (Nginx) → Load Balancer (Nginx) → FastAPI App Instances → Redis Cache -->
+[![Directory docs](img/system_architecture.png)](https://github.com/Sagor0078/System-Design-and-Scaling)
 
 ## Key Features Implemented:
 
@@ -33,3 +34,7 @@ Quick Start:
 - Rate limiting protection
 - API gateway features (auth, routing, throttling)
 - Fault tolerance with health checks
+
+## Success Indicators
+
+[![Directory docs](img/docker_image.png)](https://github.com/Sagor0078/System-Design-and-Scaling)

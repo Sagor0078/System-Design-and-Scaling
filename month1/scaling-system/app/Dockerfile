@@ -1,14 +1,35 @@
-FROM python:3.11-slim
+FROM python:3.11-slim-bookworm AS builder
 
-# Install uv.
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/uv
 
-# Copy the application into the container.
+# Set the working directory
+WORKDIR /app
+
+# Copy dependency files first to leverage Docker's cache
+COPY pyproject.toml uv.lock ./
+
+# Install dependencies into a virtual environment using uv
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --no-dev
+
+# Copy the rest of the application
 COPY . /app
 
-# Install the application dependencies.
-WORKDIR /app
-RUN uv sync --frozen --no-cache
+# Stage 2: Create the final, lean production image
+FROM python:3.11-slim-bookworm AS final
 
-# Run the application.
-CMD ["/app/.venv/bin/fastapi", "run", "app/main.py", "--port", "80", "--host", "0.0.0.0"]
+# Set the working directory
+WORKDIR /app
+
+# Copy the virtual environment and application code from the builder stage
+COPY --from=builder /app/.venv /app/.venv
+COPY --from=builder /app /app
+
+# Ensure the virtual environment's bin directory is in the PATH
+ENV PATH="/app/.venv/bin:$PATH"
+
+# Expose the port the application will run on
+EXPOSE 8000
+
+# Run the application with a production-grade server (uvicorn)
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
