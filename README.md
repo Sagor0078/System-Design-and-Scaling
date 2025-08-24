@@ -1,4 +1,4 @@
-## Roadmap to Mastering Backend Scaling & System Design
+## Roadmap to Backend Scaling & System Design
 
 This roadmap takes you from core fundamentals to advanced distributed systems, blending theory, hands-on projects, and real-world architecture patterns so you can confidently handle systems at any scale.
 
@@ -102,7 +102,7 @@ This roadmap takes you from core fundamentals to advanced distributed systems, b
 | **Graceful Degradation**  | Reduce features on failure       | [Degradation Strategies](https://uxdesign.cc/graceful-degradation-in-ux-design-ff84b2f3f6d6)                               |                                                                                               |
 | **Blue-Green Deployment** | Swap between two environments    | [Blue-Green Guide](https://martinfowler.com/bliki/BlueGreenDeployment.html)                                                |                                                                                               |
 
-## 6-12 Month Backend Systems Design & Scaling Mastery Plan
+## **6-18** Month Backend Systems Design & Scaling Learning Plan
 
 ### Month 1 – Foundations & Core Concepts
 
@@ -118,8 +118,8 @@ Topics
 
 Hands-On
 
-- Mini Project:
-1. Build a simple FastAPI/Django app with Redis caching and Nginx load balancing
+- [Mini Project](https://github.com/Sagor0078/System-Design-and-Scaling/tree/main/month1/scaling-system):
+1. Build a simple FastAPI app with Redis caching and Nginx load balancing
 2. Add an API Gateway (Kong or Nginx) in front of it
 3. Implement rate limiting using Redis
 
@@ -270,7 +270,7 @@ Resources
 - [Netflix Tech Blog](https://netflixtechblog.com/)
 - [Uber Engineering Blog](https://eng.uber.com/)
 
-### Mastery Workflow
+### The Workflow
 
 Every topic → Theory (2-3 days) → Small implementation (2-3 days) → Integrate into ongoing capstone project.
 By the end, we’ll have a portfolio of 6 projects showcasing all major backend scaling patterns.
