@@ -38,3 +38,8 @@ Quick Start:
 ## Success Indicators
 
 [![Directory docs](img/docker_image.png)](https://github.com/Sagor0078/System-Design-and-Scaling)
+
+## Resources
+
+Highly Recommended:
+- [NGINX for Backend Developers](https://www.freecodecamp.org/news/nginx/)
