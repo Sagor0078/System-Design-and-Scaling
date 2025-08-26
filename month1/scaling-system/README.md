@@ -1,7 +1,7 @@
 ## Architecture Overview
 
 <!-- Client → API Gateway (Nginx) → Load Balancer (Nginx) → FastAPI App Instances → Redis Cache -->
-[![Directory docs](img/system_architecture.png)](https://github.com/Sagor0078/System-Design-and-Scaling)
+[![Directory docs](img/sys.png)](https://github.com/Sagor0078/System-Design-and-Scaling)
 
 ## Key Features Implemented:
 
@@ -21,12 +21,6 @@
 - RESTful Design: Clean API endpoints with proper HTTP methods
 - Containerization: Each service in its own container
 
-Quick Start:
-
-- Clone the structure and create all files as shown
-- Run the system: docker-compose up --build -d
-- Test it: python test_system.py
-
 ## The system demonstrates:
 
 - Load distribution across multiple app instances
@@ -38,6 +32,20 @@ Quick Start:
 ## Success Indicators
 
 [![Directory docs](img/docker_image.png)](https://github.com/Sagor0078/System-Design-and-Scaling)
+
+## Quick Start:
+- Clone the structure and create all files as shown
+```bash
+git clone https://github.com/Sagor0078/System-Design-and-Scaling.git
+```
+- Run the system: 
+```bash
+docker-compose up --build -d
+```
+- Test it: 
+```bash
+uv run python3 test_system.py
+```
 
 ## Resources
 
