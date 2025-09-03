@@ -1,6 +1,7 @@
-import requests
 import time
 from concurrent.futures import ThreadPoolExecutor
+
+import requests
 
 BASE_URL = "http://localhost:8080"
 AUTH_HEADER = {"Authorization": "Bearer dummy-token"}
@@ -31,7 +32,7 @@ def test_load_balancing():
         if response.status_code == 200:
             server_id = response.json().get("server_id")
             servers_hit.add(server_id)
-            print(f"Request {i+1}: Server {server_id}")
+            print(f"Request {i + 1}: Server {server_id}")
         time.sleep(0.1)
 
     print(f"Hit {len(servers_hit)} different servers: {servers_hit}")

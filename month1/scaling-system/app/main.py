@@ -1,28 +1,30 @@
-from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import JSONResponse
 import os
 import time
 import uuid
-from models import CreateUserRequest, ApiResponse
-from cache import RedisCache, RateLimiter
+from collections.abc import Callable
+from typing import Any
 
-# App configuration
+from fastapi import FastAPI, HTTPException, Request, Response
+from fastapi.responses import JSONResponse
+
+from cache import RateLimiter, RedisCache
+from models import ApiResponse, CreateUserRequest
+
 app = FastAPI(title="Scalable API", version="1.0.0")
 server_id = os.getenv("SERVER_ID", f"server-{uuid.uuid4().hex[:8]}")
 
-# Initialize cache and rate limiter
 cache = RedisCache()
 rate_limiter = RateLimiter(cache.redis_client)
 
 # In-memory database (for demo)
-users_db = {}
+users_db: dict[int, dict[str, Any]] = {}
 user_counter = 0
 
 
 @app.middleware("http")
-async def rate_limiting_middleware(request: Request, call_next):
+async def rate_limiting_middleware(request: Request, call_next: Callable) -> Response:
     """Rate limiting middleware"""
-    client_ip = request.client.host
+    client_ip = request.client.host if request.client else "unknown"
 
     # Apply rate limiting (10 requests per minute)
     is_allowed, rate_info = rate_limiter.is_allowed(
@@ -44,7 +46,7 @@ async def rate_limiting_middleware(request: Request, call_next):
 
     response = await call_next(request)
 
-    # Add rate limit headers
+    # add rate limit headers
     response.headers["X-RateLimit-Remaining"] = str(rate_info["tokens_remaining"])
     response.headers["X-RateLimit-Reset"] = str(rate_info["reset_time"])
     response.headers["X-Server-ID"] = server_id
@@ -53,17 +55,17 @@ async def rate_limiting_middleware(request: Request, call_next):
 
 
 @app.get("/health")
-async def health_check():
+async def health_check() -> ApiResponse:
     """Health check endpoint"""
     return ApiResponse(success=True, message="Service healthy", server_id=server_id)
 
 
 @app.get("/users/{user_id}")
-async def get_user(user_id: int):
+async def get_user(user_id: int) -> ApiResponse:
     """Get user with caching"""
     cache_key = f"user:{user_id}"
 
-    # Try cache first
+    # try cache first
     cached_user = cache.get(cache_key)
     if cached_user:
         return ApiResponse(
@@ -73,13 +75,13 @@ async def get_user(user_id: int):
             server_id=server_id,
         )
 
-    # Check database
+    # check database
     if user_id not in users_db:
         raise HTTPException(status_code=404, detail="User not found")
 
     user_data = users_db[user_id]
 
-    # Cache the result
+    # cache the result
     cache.set(cache_key, user_data, ttl=300)  # 5 minutes TTL
 
     return ApiResponse(
@@ -91,7 +93,7 @@ async def get_user(user_id: int):
 
 
 @app.post("/users")
-async def create_user(user_request: CreateUserRequest):
+async def create_user(user_request: CreateUserRequest) -> ApiResponse:
     """Create new user"""
     global user_counter
     user_counter += 1
@@ -103,10 +105,10 @@ async def create_user(user_request: CreateUserRequest):
         "created_at": time.time(),
     }
 
-    # Save to database
+    # save to database
     users_db[user_counter] = user_data
 
-    # Cache the new user
+    # cache the new user
     cache_key = f"user:{user_counter}"
     cache.set(cache_key, user_data, ttl=300)
 
@@ -119,7 +121,7 @@ async def create_user(user_request: CreateUserRequest):
 
 
 @app.get("/users")
-async def list_users():
+async def list_users() -> ApiResponse:
     """List all users (no caching for demo)"""
     return ApiResponse(
         success=True,
@@ -130,7 +132,7 @@ async def list_users():
 
 
 @app.delete("/users/{user_id}")
-async def delete_user(user_id: int):
+async def delete_user(user_id: int) -> ApiResponse:
     """Delete user and clear cache"""
     if user_id not in users_db:
         raise HTTPException(status_code=404, detail="User not found")
