@@ -1,9 +1,13 @@
-# Scalable System Design with FastAPI, Nginx, Redis & Docker
+## Scalable System Design with FastAPI, Nginx, Redis & Docker
 
-[![CI/CD Pipeline](https://github.com/Sagor0078/System-Design-and-Scaling/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/Sagor0078/System-Design-and-Scaling/actions)
-[![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/downloads/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.116.1+-green.svg)](https://fastapi.tiangolo.com/)
-[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+[![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/downloads/) 
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.116.1+-green.svg)](https://fastapi.tiangolo.com/) 
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff) 
+[![Redis](https://img.shields.io/badge/Redis-7.2+-red.svg?logo=redis&logoColor=white)](https://redis.io/) 
+[![Nginx](https://img.shields.io/badge/Nginx-1.25+-green.svg?logo=nginx&logoColor=white)](https://nginx.org/) 
+[![Docker](https://img.shields.io/badge/Docker-25+-2496ED.svg?logo=docker&logoColor=white)](https://www.docker.com/) 
+[![Locust](https://img.shields.io/badge/Locust-2.30+-darkgreen.svg?logo=locust&logoColor=white)](https://locust.io/)
+
 
 A production-ready scalable system demonstrating modern DevOps practices, microservices architecture, and automated CI/CD pipelines.
 
@@ -11,11 +15,6 @@ A production-ready scalable system demonstrating modern DevOps practices, micros
 
 <!-- Client → API Gateway (Nginx) → Load Balancer (Nginx) → FastAPI App Instances → Redis Cache -->
 [![Directory docs](img/sys.png)](https://github.com/Sagor0078/System-Design-and-Scaling)
-
-### System Flow:
-```
-Client Request → API Gateway (Nginx) → Load Balancer (Nginx) → FastAPI Apps (3 instances) → Redis Cache
-```
 
 ## Key Features Implemented
 
@@ -150,7 +149,7 @@ make security          # Security vulnerability scan
 | **Orchestration** | Docker Compose | Multi-container application management |
 | **Dependency Management** | uv | Fast Python package installer |
 | **Code Quality** | Ruff | Fast Python linter and formatter |
-| **Type Checking** | MyPy | Static type checker |
+| **Type Checking** | Pyright | Dynamic type checker build with Rust |
 | **Testing** | Pytest | Testing framework |
 | **Security** | Bandit, Safety | Security vulnerability scanning |
 | **CI/CD** | GitHub Actions | Automated testing and deployment |

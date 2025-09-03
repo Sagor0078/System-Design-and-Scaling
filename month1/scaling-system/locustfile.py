@@ -24,7 +24,7 @@ class ScalingSystemUser(HttpUser):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.user_ids: list[int] = []
-        self.auth_token = "Bearer test-token"  # Simple auth token
+        self.auth_token = "Bearer test-token"  # Simple auth token  # noqa: S105
         # Set default headers for all requests
         self.client.headers.update({"Authorization": self.auth_token})
 
@@ -212,7 +212,7 @@ class HighVolumeUser(HttpUser):
 
         # Remove auth header for gateway health
         headers = {} if endpoint == "/gateway-health" else {"Authorization": self.client.headers.get("Authorization")}
-        
+
         with self.client.get(endpoint, headers=headers, name="health (high volume)",
                            catch_response=True) as response:
             if response.status_code == 200:
