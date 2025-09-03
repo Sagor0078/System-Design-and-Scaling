@@ -1,5 +1,4 @@
 from pydantic import BaseModel
-from typing import Optional
 
 
 class UserResponse(BaseModel):
@@ -16,6 +15,6 @@ class CreateUserRequest(BaseModel):
 
 class ApiResponse(BaseModel):
     success: bool
-    data: Optional[dict] = None
+    data: dict | None = None
     message: str = ""
     server_id: str = ""

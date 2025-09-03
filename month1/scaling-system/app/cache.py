@@ -1,12 +1,13 @@
-import redis
 import json
 import os
 import time
-from typing import Optional, Any
+from typing import Any
+
+import redis
 
 
 class RedisCache:
-    def __init__(self):
+    def __init__(self) -> None:
         self.redis_client = redis.Redis(
             host=os.getenv("REDIS_HOST", "redis"),
             port=int(os.getenv("REDIS_PORT", 6379)),
@@ -14,7 +15,7 @@ class RedisCache:
             decode_responses=True,
         )
 
-    def get(self, key: str) -> Optional[Any]:
+    def get(self, key: str) -> Any | None:
         """Get value from cache"""
         try:
             value = self.redis_client.get(key)
@@ -26,7 +27,8 @@ class RedisCache:
     def set(self, key: str, value: Any, ttl: int = 300) -> bool:
         """Set value in cache with TTL"""
         try:
-            return self.redis_client.setex(key, ttl, json.dumps(value, default=str))
+            result = self.redis_client.setex(key, ttl, json.dumps(value, default=str))
+            return bool(result)
         except Exception as e:
             print(f"Cache set error: {e}")
             return False
