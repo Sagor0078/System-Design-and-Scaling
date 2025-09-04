@@ -24,7 +24,7 @@ class ScalingSystemUser(HttpUser):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.user_ids: list[int] = []
-        self.auth_token = "Bearer test-token"  # Simple auth token
+        self.auth_token = "Bearer test-token"  # Simple auth token  # noqa: S105
         # Set default headers for all requests
         self.client.headers.update({"Authorization": self.auth_token})
 
@@ -56,10 +56,12 @@ class ScalingSystemUser(HttpUser):
         """Create a new user."""
         user_data = {
             "name": f"User-{secrets.randbelow(9000) + 1000}",
-            "email": f"user{secrets.randbelow(9000) + 1000}@example.com"
+            "email": f"user{secrets.randbelow(9000) + 1000}@example.com",
         }
 
-        with self.client.post("/api/users", json=user_data, catch_response=True) as response:
+        with self.client.post(
+            "/api/users", json=user_data, catch_response=True
+        ) as response:
             if response.status_code == 201:
                 try:
                     data = response.json()
@@ -101,10 +103,12 @@ class ScalingSystemUser(HttpUser):
         user_id = secrets.choice(self.user_ids)
         update_data = {
             "name": f"Updated-User-{secrets.randbelow(9000) + 1000}",
-            "email": f"updated{secrets.randbelow(9000) + 1000}@example.com"
+            "email": f"updated{secrets.randbelow(9000) + 1000}@example.com",
         }
 
-        with self.client.put(f"/api/users/{user_id}", json=update_data, catch_response=True) as response:
+        with self.client.put(
+            f"/api/users/{user_id}", json=update_data, catch_response=True
+        ) as response:
             if response.status_code == 200:
                 response.success()
             elif response.status_code == 404:
@@ -118,10 +122,12 @@ class ScalingSystemUser(HttpUser):
         """List all users with pagination."""
         params = {
             "skip": secrets.randbelow(10) * 10,
-            "limit": secrets.randbelow(10) + 10
+            "limit": secrets.randbelow(10) + 10,
         }
 
-        with self.client.get("/api/users", params=params, catch_response=True) as response:
+        with self.client.get(
+            "/api/users", params=params, catch_response=True
+        ) as response:
             if response.status_code == 200:
                 try:
                     data = response.json()
@@ -144,12 +150,15 @@ class ScalingSystemUser(HttpUser):
 
         # Make multiple requests to the same user to test caching
         for _ in range(3):
-            with self.client.get(f"/api/users/{user_id}", name="/api/users/[id] (cache test)",
-                               catch_response=True) as response:
+            with self.client.get(
+                f"/api/users/{user_id}",
+                name="/api/users/[id] (cache test)",
+                catch_response=True,
+            ) as response:
                 if response.status_code == 200:
                     # Check for cache headers if they exist
-                    cache_status = response.headers.get('X-Cache-Status', 'unknown')
-                    if cache_status in ['hit', 'miss']:
+                    cache_status = response.headers.get("X-Cache-Status", "unknown")
+                    if cache_status in ["hit", "miss"]:
                         response.success()
                     else:
                         response.success()  # Still successful even without cache headers
@@ -163,7 +172,9 @@ class ScalingSystemUser(HttpUser):
             return
 
         user_id = secrets.choice(self.user_ids)
-        with self.client.delete(f"/api/users/{user_id}", catch_response=True) as response:
+        with self.client.delete(
+            f"/api/users/{user_id}", catch_response=True
+        ) as response:
             if response.status_code == 200:
                 self.user_ids.remove(user_id)
                 response.success()
@@ -197,8 +208,11 @@ class HighVolumeUser(HttpUser):
             return
 
         user_id = secrets.choice(self.user_ids)
-        with self.client.get(f"/api/users/{user_id}", name="/api/users/[id] (high volume)",
-                           catch_response=True) as response:
+        with self.client.get(
+            f"/api/users/{user_id}",
+            name="/api/users/[id] (high volume)",
+            catch_response=True,
+        ) as response:
             if response.status_code == 200:
                 response.success()
             else:
@@ -211,24 +225,33 @@ class HighVolumeUser(HttpUser):
         endpoint = secrets.choice(endpoints)
 
         # Remove auth header for gateway health
-        headers = {} if endpoint == "/gateway-health" else {"Authorization": self.client.headers.get("Authorization")}
-        
-        with self.client.get(endpoint, headers=headers, name="health (high volume)",
-                           catch_response=True) as response:
+        headers = (
+            {}
+            if endpoint == "/gateway-health"
+            else {"Authorization": self.client.headers.get("Authorization")}
+        )
+
+        with self.client.get(
+            endpoint, headers=headers, name="health (high volume)", catch_response=True
+        ) as response:
             if response.status_code == 200:
                 response.success()
             else:
-                response.failure(f"High volume health check failed: {response.status_code}")
+                response.failure(
+                    f"High volume health check failed: {response.status_code}"
+                )
 
     def setup_test_users(self):
         """Create test users for high-volume testing."""
         for _ in range(5):
             user_data = {
                 "name": f"HVUser-{secrets.randbelow(90000) + 10000}",
-                "email": f"hv{secrets.randbelow(90000) + 10000}@test.com"
+                "email": f"hv{secrets.randbelow(90000) + 10000}@test.com",
             }
 
-            with self.client.post("/api/users", json=user_data, catch_response=True) as response:
+            with self.client.post(
+                "/api/users", json=user_data, catch_response=True
+            ) as response:
                 if response.status_code == 201:
                     try:
                         data = response.json()
@@ -257,11 +280,15 @@ class AdminUser(HttpUser):
         for _ in range(5):
             user_data = {
                 "name": f"BulkUser-{secrets.randbelow(90000) + 10000}",
-                "email": f"bulk{secrets.randbelow(90000) + 10000}@admin.com"
+                "email": f"bulk{secrets.randbelow(90000) + 10000}@admin.com",
             }
 
-            with self.client.post("/api/users", json=user_data, name="bulk create user",
-                                catch_response=True) as response:
+            with self.client.post(
+                "/api/users",
+                json=user_data,
+                name="bulk create user",
+                catch_response=True,
+            ) as response:
                 if response.status_code == 201:
                     try:
                         data = response.json()
@@ -280,8 +307,9 @@ class AdminUser(HttpUser):
             return
 
         for user_id in self.bulk_user_ids[:10]:  # Read up to 10 users
-            with self.client.get(f"/api/users/{user_id}", name="bulk read user",
-                               catch_response=True) as response:
+            with self.client.get(
+                f"/api/users/{user_id}", name="bulk read user", catch_response=True
+            ) as response:
                 if response.status_code == 200:
                     response.success()
                 elif response.status_code == 404:
@@ -297,14 +325,17 @@ class AdminUser(HttpUser):
         services = [
             ("/gateway-health", False),  # (endpoint, needs_auth)
             ("/api/health", True),
-            ("/api/users?limit=5", True)
+            ("/api/users?limit=5", True),
         ]
 
         for service, needs_auth in services:
             headers = {"Authorization": "Bearer test-token"} if needs_auth else {}
-            with self.client.get(service, headers=headers, name="system overview",
-                               catch_response=True) as response:
+            with self.client.get(
+                service, headers=headers, name="system overview", catch_response=True
+            ) as response:
                 if response.status_code == 200:
                     response.success()
                 else:
-                    response.failure(f"System overview check failed for {service}: {response.status_code}")
+                    response.failure(
+                        f"System overview check failed for {service}: {response.status_code}"
+                    )

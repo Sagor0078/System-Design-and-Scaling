@@ -70,22 +70,3 @@ ci-check: lint format type-check test ## run all CI checks locally
 dev-setup: install ## set up development environment
 	@echo "Development environment ready!"
 	@echo "Run 'make help' to see available commands"
-
-# Load testing commands
-load-test: ## run basic load test
-	./load_test.sh basic
-
-load-test-stress: ## run stress load test
-	./load_test.sh stress
-
-load-test-cache: ## run cache performance test
-	./load_test.sh cache
-
-load-test-all: ## run all load tests
-	./load_test.sh all
-
-load-test-ui: ## start interactive load testing UI
-	./load_test.sh interactive
-
-load-test-reports: ## show available load test reports
-	./load_test.sh reports

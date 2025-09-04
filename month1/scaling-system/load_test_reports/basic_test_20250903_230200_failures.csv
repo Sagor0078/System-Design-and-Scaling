@@ -1,0 +1,18 @@
+Method,Name,Error,Occurrences
+GET,/api/users?skip=60&limit=18,CatchResponseError('Failed to list users: 503'),1
+GET,/api/health,CatchResponseError('App health check failed: 503'),1
+GET,/api/users?skip=30&limit=19,CatchResponseError('Failed to list users: 503'),1
+GET,/api/users?skip=90&limit=15,CatchResponseError('Failed to list users: 503'),1
+POST,bulk create user,CatchResponseError('Bulk create failed: 200'),8
+GET,system overview,CatchResponseError('System overview check failed for /api/users?limit=5: 503'),2
+POST,bulk create user,CatchResponseError('Bulk create failed: 503'),42
+POST,/api/users,CatchResponseError('Failed to create user: 200'),10
+GET,/api/users?skip=0&limit=16,CatchResponseError('Invalid user list response format'),1
+POST,/api/users,CatchResponseError('Failed to create user: 503'),4
+GET,system overview,CatchResponseError('System overview check failed for /api/health: 503'),2
+POST,/api/users,HTTPError('503 Server Error: Service Temporarily Unavailable for url: /api/users'),52
+GET,/api/users?skip=0&limit=13,CatchResponseError('Failed to list users: 503'),1
+GET,/api/users?skip=70&limit=13,CatchResponseError('Failed to list users: 503'),1
+GET,/api/users?skip=70&limit=18,CatchResponseError('Failed to list users: 503'),1
+GET,health (high volume),CatchResponseError('High volume health check failed: 503'),1
+GET,/api/users?skip=80&limit=14,CatchResponseError('Failed to list users: 503'),1

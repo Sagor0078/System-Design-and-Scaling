@@ -23,7 +23,7 @@ FastAPI scaling system now has comprehensive load testing capabilities using **L
 uv sync --group dev
 ```
 
-### 2. Start Your System
+### 2. Start the System
 ```bash
 docker-compose up -d
 ```

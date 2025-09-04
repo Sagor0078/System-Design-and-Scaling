@@ -12,7 +12,7 @@ uv sync --group dev
 
 ### 2. Start the System
 ```bash
-# Start all services
+# start all services
 docker-compose up -d
 
 # Verify system is running
