@@ -1,4 +1,4 @@
-## Scalable System Design with FastAPI, Nginx, Redis & Docker
+## Scalable System Design with FastAPI, Nginx, Redis, Locust(load test) & Docker
 
 [![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/downloads/) 
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.116.1+-green.svg)](https://fastapi.tiangolo.com/) 
@@ -9,12 +9,17 @@
 [![Locust](https://img.shields.io/badge/Locust-2.30+-darkgreen.svg?logo=locust&logoColor=white)](https://locust.io/)
 
 
-A production-ready scalable system demonstrating modern DevOps practices, microservices architecture, and automated CI/CD pipelines.
+**A scalable system demonstrating modern DevOps practices, microservices architecture, and automated CI/CD pipelines.**
 
 ## Architecture Overview
 
 <!-- Client → API Gateway (Nginx) → Load Balancer (Nginx) → FastAPI App Instances → Redis Cache -->
 [![Directory docs](img/sys.png)](https://github.com/Sagor0078/System-Design-and-Scaling)
+
+### System Flow:
+```
+Client Request → API Gateway (Nginx) → Load Balancer (Nginx) → FastAPI Apps (3 instances) → Redis Cache
+```
 
 ## Key Features Implemented
 
@@ -61,7 +66,7 @@ A production-ready scalable system demonstrating modern DevOps practices, micros
 
 ## Success Indicators
 
-[![Directory docs](img/docker_image.png)](https://github.com/Sagor0078/System-Design-and-Scaling)
+[![Success metrics dashboard showing test results and system health indicators. The dashboard displays a summary of passed tests, system uptime, and performance statistics in a clean, organized layout. The environment is a modern web interface with green highlights indicating successful operations. Text in the image includes: 10 passed in 2.51s. The overall tone is positive and reassuring, emphasizing reliability and stability.](img/success.png)](https://github.com/Sagor0078/System-Design-and-Scaling)
 
 ## Quick Start
 
@@ -149,7 +154,7 @@ make security          # Security vulnerability scan
 | **Orchestration** | Docker Compose | Multi-container application management |
 | **Dependency Management** | uv | Fast Python package installer |
 | **Code Quality** | Ruff | Fast Python linter and formatter |
-| **Type Checking** | Pyright | Dynamic type checker build with Rust |
+| **Type Checking** | Pyright | Dynamic type checker |
 | **Testing** | Pytest | Testing framework |
 | **Security** | Bandit, Safety | Security vulnerability scanning |
 | **CI/CD** | GitHub Actions | Automated testing and deployment |
@@ -208,7 +213,7 @@ curl http://localhost:8080/api/users/1 \
 - [Docker Best Practices](https://docs.docker.com/develop/best-practices/)
 - [System Design Primer](https://github.com/donnemartin/system-design-primer)
 
-## 🤝 Contributing
+## Contributing
 
 1. **Fork the repository**
 2. **Create a feature branch**: `git checkout -b feature/amazing-feature`
@@ -257,11 +262,8 @@ uv sync --dev
 - **Redis** for high-performance caching
 - **Astral** team for the amazing ruff and uv tools
 - **Docker** for containerization technology
-- **Pyright** for type checking
 
 ---
-
-⭐ **Star this repo if you found it helpful!**
 
 - **Questions?** Feel free to open an issue or reach out!
 

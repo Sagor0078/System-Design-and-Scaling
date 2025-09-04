@@ -210,7 +210,7 @@ case "${1:-help}" in
     "all")
         check_system
         install_locust
-        echo -e "${BLUE}🏃 Running all automated tests...${NC}"
+        echo -e "${BLUE} Running all automated tests...${NC}"
         run_basic_test
         echo
         run_cache_test
