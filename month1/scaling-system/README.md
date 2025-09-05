@@ -11,17 +11,17 @@
 
 **A scalable system demonstrating modern DevOps practices, microservices architecture, and automated CI/CD pipelines.**
 
-## Architecture Overview
+### Architecture Overview
 
 <!-- Client → API Gateway (Nginx) → Load Balancer (Nginx) → FastAPI App Instances → Redis Cache -->
-[![Directory docs](img/sys.png)](https://github.com/Sagor0078/System-Design-and-Scaling)
+[![Directory docs](img/sys1.png)](https://github.com/Sagor0078/System-Design-and-Scaling)
 
 ### System Flow:
 ```
 Client Request → API Gateway (Nginx) → Load Balancer (Nginx) → FastAPI Apps (3 instances) → Redis Cache
 ```
 
-## Key Features Implemented
+### Key Features Implemented
 
 ### **Scalability & Performance**
 - **Horizontal Scaling**: 3 FastAPI instances behind load balancer
@@ -47,7 +47,7 @@ Client Request → API Gateway (Nginx) → Load Balancer (Nginx) → FastAPI App
 - **Security Scanning**: Safety and Bandit integration
 - **Pre-commit Hooks**: Automated code quality checks
 
-## Clean Code Architecture Principles
+### Clean Code Architecture Principles
 
 - **Separation of Concerns**: Models, caching, and business logic separated
 - **Configuration Management**: Environment-based settings
@@ -56,7 +56,7 @@ Client Request → API Gateway (Nginx) → Load Balancer (Nginx) → FastAPI App
 - **RESTful Design**: Clean API endpoints with proper HTTP methods
 - **Containerization**: Each service in its own optimized container
 
-## System Capabilities
+### System Capabilities
 **Load Distribution**: Intelligent traffic distribution across instances  
 **Performance Optimization**: Redis caching for improved response times  
 **Security**: Rate limiting and authentication protection  
@@ -64,11 +64,11 @@ Client Request → API Gateway (Nginx) → Load Balancer (Nginx) → FastAPI App
 **Monitoring**: Health checks and service discovery  
 **DevOps**: Complete CI/CD pipeline with automated quality checks  
 
-## Success Indicators
+### Success Indicators
 
 [![Success metrics dashboard showing test results and system health indicators. The dashboard displays a summary of passed tests, system uptime, and performance statistics in a clean, organized layout. The environment is a modern web interface with green highlights indicating successful operations. Text in the image includes: 10 passed in 2.51s. The overall tone is positive and reassuring, emphasizing reliability and stability.](img/success.png)](https://github.com/Sagor0078/System-Design-and-Scaling)
 
-## Quick Start
+### Quick Start
 
 ### Prerequisites
 - **Docker & Docker Compose**
@@ -102,7 +102,7 @@ make run-tests-local
 uv run python tests/test_system.py
 ```
 
-## Development Workflow
+### Development Workflow
 
 ### Available Commands
 ```bash
@@ -142,7 +142,7 @@ make type-check        # Static type analysis
 make security          # Security vulnerability scan
 ```
 
-## Technology Stack
+### Technology Stack
 
 | Component | Technology | Purpose |
 |-----------|------------|---------|
@@ -166,7 +166,7 @@ make security          # Security vulnerability scan
 - **Availability**: 99.9% uptime with health checks
 - **Scalability**: Horizontal scaling ready -->
 
-## API Endpoints
+### API Endpoints
 
 ### Public Endpoints
 - `GET /gateway-health` - API Gateway health check
@@ -195,7 +195,7 @@ curl http://localhost:8080/api/users/1 \
   -H "Authorization: Bearer dummy-token"
 ```
 
-## Security Features
+### Security Features
 
 - **Rate Limiting**: 20 requests/minute per IP
 - **Authentication**: Bearer token validation
@@ -204,7 +204,7 @@ curl http://localhost:8080/api/users/1 \
 - **Vulnerability Scanning**: Automated security checks in CI
 
 
-## Learning Resources
+### Learning Resources
 
 **Highly Recommended:**
 - [NGINX for Backend Developers](https://www.freecodecamp.org/news/nginx/)
@@ -213,7 +213,7 @@ curl http://localhost:8080/api/users/1 \
 - [Docker Best Practices](https://docs.docker.com/develop/best-practices/)
 - [System Design Primer](https://github.com/donnemartin/system-design-primer)
 
-## Contributing
+### Contributing
 
 1. **Fork the repository**
 2. **Create a feature branch**: `git checkout -b feature/amazing-feature`
@@ -229,7 +229,7 @@ curl http://localhost:8080/api/users/1 \
 - Update documentation as needed
 - Ensure all CI checks pass
 
-## Troubleshooting
+### Troubleshooting
 
 ### Common Issues
 
@@ -255,7 +255,7 @@ make clean
 uv sync --dev
 ```
 
-## Acknowledgments
+### Acknowledgments
 
 - **FastAPI** team for the excellent web framework
 - **Nginx** for robust load balancing and reverse proxy
@@ -268,3 +268,5 @@ uv sync --dev
 - **Questions?** Feel free to open an issue or reach out!
 
 - **Happy Scaling!**
+
+---
