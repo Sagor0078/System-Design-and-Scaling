@@ -1,4 +1,4 @@
-## Scalable System Design with FastAPI, Nginx, Redis, Locust(load test) & Docker
+### Scalable System Design with FastAPI, Nginx, Redis, Locust(load test) & Docker
 
 [![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/downloads/) 
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.116.1+-green.svg)](https://fastapi.tiangolo.com/) 
@@ -9,45 +9,45 @@
 [![Locust](https://img.shields.io/badge/Locust-2.30+-darkgreen.svg?logo=locust&logoColor=white)](https://locust.io/)
 
 
-**A scalable system demonstrating modern DevOps practices, microservices architecture, and automated CI/CD pipelines.**
+A scalable system demonstrating modern DevOps practices, microservices architecture, and automated CI/CD pipelines.
 
-### Architecture Overview
+#### Architecture Overview
 
 <!-- Client → API Gateway (Nginx) → Load Balancer (Nginx) → FastAPI App Instances → Redis Cache -->
 [![Directory docs](img/sys1.png)](https://github.com/Sagor0078/System-Design-and-Scaling)
 
-### System Flow:
+#### System Flow:
 ```
 Client Request → API Gateway (Nginx) → Load Balancer (Nginx) → FastAPI Apps (3 instances) → Redis Cache
 ```
 
-### Key Features Implemented
+#### Key Features Implemented
 
-### **Scalability & Performance**
+#### **Scalability & Performance**
 - **Horizontal Scaling**: 3 FastAPI instances behind load balancer
 - **Caching Strategy**: Redis with cache-aside pattern and TTL
 - **Load Balancing**: Nginx with least-connections algorithm
 - **Rate Limiting**: Token bucket algorithm using Redis
 
-### **API Gateway Features**
+#### **API Gateway Features**
 - **Authentication**: Bearer token validation
 - **Routing**: Smart request routing and path rewriting
 - **CORS Support**: Cross-origin resource sharing
 - **Rate Limiting**: Multiple rate limiting zones
 
-### **Reliability & Monitoring**
+#### **Reliability & Monitoring**
 - **Health Checks**: Service monitoring and auto-recovery
 - **Fault Tolerance**: Graceful error handling
 - **Circuit Breaker**: Automatic failover mechanisms
 
-### **Modern Development Practices**
+#### **Modern Development Practices**
 - **CI/CD Pipeline**: Automated testing, linting, and deployment
 - **Code Quality**: Ruff for fast linting and formatting
 - **Type Safety**: MyPy static type checking
 - **Security Scanning**: Safety and Bandit integration
 - **Pre-commit Hooks**: Automated code quality checks
 
-### Clean Code Architecture Principles
+#### Clean Code Architecture Principles
 
 - **Separation of Concerns**: Models, caching, and business logic separated
 - **Configuration Management**: Environment-based settings
@@ -56,7 +56,7 @@ Client Request → API Gateway (Nginx) → Load Balancer (Nginx) → FastAPI App
 - **RESTful Design**: Clean API endpoints with proper HTTP methods
 - **Containerization**: Each service in its own optimized container
 
-### System Capabilities
+#### System Capabilities
 **Load Distribution**: Intelligent traffic distribution across instances  
 **Performance Optimization**: Redis caching for improved response times  
 **Security**: Rate limiting and authentication protection  
@@ -64,18 +64,18 @@ Client Request → API Gateway (Nginx) → Load Balancer (Nginx) → FastAPI App
 **Monitoring**: Health checks and service discovery  
 **DevOps**: Complete CI/CD pipeline with automated quality checks  
 
-### Success Indicators
+#### Success Indicators
 
 [![Success metrics dashboard showing test results and system health indicators. The dashboard displays a summary of passed tests, system uptime, and performance statistics in a clean, organized layout. The environment is a modern web interface with green highlights indicating successful operations. Text in the image includes: 10 passed in 2.51s. The overall tone is positive and reassuring, emphasizing reliability and stability.](img/success.png)](https://github.com/Sagor0078/System-Design-and-Scaling)
 
-### Quick Start
+#### Quick Start
 
-### Prerequisites
+#### Prerequisites
 - **Docker & Docker Compose**
 - **Python 3.11+**
 - **uv** (for dependency management)
 
-### 1. Clone & Setup
+#### 1. Clone & Setup
 ```bash
 git clone https://github.com/Sagor0078/System-Design-and-Scaling.git
 cd System-Design-and-Scaling/month1/scaling-system
@@ -84,7 +84,7 @@ cd System-Design-and-Scaling/month1/scaling-system
 ./scripts/setup-dev.sh
 ```
 
-### 2. Run the System
+#### 2. Run the System
 ```bash
 # Using Docker Compose (Production-like)
 docker-compose up --build -d
@@ -93,7 +93,7 @@ docker-compose up --build -d
 make run-local
 ```
 
-### 3. Test the System
+#### 3. Test the System
 ```bash
 # Run integration tests
 make run-tests-local
@@ -102,15 +102,15 @@ make run-tests-local
 uv run python tests/test_system.py
 ```
 
-### Development Workflow
+#### Development Workflow
 
-### Available Commands
+#### Available Commands
 ```bash
 make help              # Show all available commands
 make install           # Install dependencies
 make lint              # Run ruff linting
 make format            # Format code with ruff
-make type-check        # Run mypy type checking
+make type-check        # Run Pyright type checking
 make test              # Run unit tests
 make test-cov          # Run tests with coverage
 make security          # Run security scans
@@ -119,7 +119,7 @@ make docker-build      # Build Docker images
 make run-local         # Start system with Docker Compose
 ```
 
-### Development Setup
+#### Development Setup
 ```bash
 # Quick setup
 ./scripts/setup-dev.sh
@@ -130,7 +130,7 @@ cd app && uv sync --dev
 uv run pre-commit install
 ```
 
-### Code Quality Checks
+#### Code Quality Checks
 ```bash
 # Run all checks (same as CI)
 make ci-check
@@ -142,7 +142,7 @@ make type-check        # Static type analysis
 make security          # Security vulnerability scan
 ```
 
-### Technology Stack
+#### Technology Stack
 
 | Component | Technology | Purpose |
 |-----------|------------|---------|
@@ -166,20 +166,20 @@ make security          # Security vulnerability scan
 - **Availability**: 99.9% uptime with health checks
 - **Scalability**: Horizontal scaling ready -->
 
-### API Endpoints
+#### API Endpoints
 
-### Public Endpoints
+#### Public Endpoints
 - `GET /gateway-health` - API Gateway health check
 - `GET /lb-health` - Load balancer health check
 
-### Protected Endpoints (require Authorization header)
+#### Protected Endpoints (require Authorization header)
 - `GET /api/health` - Application health check
 - `GET /api/users` - List all users
 - `POST /api/users` - Create new user
 - `GET /api/users/{id}` - Get user by ID (cached)
 - `DELETE /api/users/{id}` - Delete user
 
-### Example Usage
+#### Example Usage
 ```bash
 # Health check
 curl http://localhost:8080/gateway-health
@@ -195,7 +195,7 @@ curl http://localhost:8080/api/users/1 \
   -H "Authorization: Bearer dummy-token"
 ```
 
-### Security Features
+#### Security Features
 
 - **Rate Limiting**: 20 requests/minute per IP
 - **Authentication**: Bearer token validation
@@ -204,7 +204,7 @@ curl http://localhost:8080/api/users/1 \
 - **Vulnerability Scanning**: Automated security checks in CI
 
 
-### Learning Resources
+#### Learning Resources
 
 **Highly Recommended:**
 - [NGINX for Backend Developers](https://www.freecodecamp.org/news/nginx/)
@@ -213,7 +213,7 @@ curl http://localhost:8080/api/users/1 \
 - [Docker Best Practices](https://docs.docker.com/develop/best-practices/)
 - [System Design Primer](https://github.com/donnemartin/system-design-primer)
 
-### Contributing
+#### Contributing
 
 1. **Fork the repository**
 2. **Create a feature branch**: `git checkout -b feature/amazing-feature`
@@ -223,15 +223,15 @@ curl http://localhost:8080/api/users/1 \
 6. **Push to the branch**: `git push origin feature/amazing-feature`
 7. **Open a Pull Request**
 
-### Development Guidelines
+#### Development Guidelines
 - Follow the existing code style (enforced by ruff)
 - Add tests for new features
 - Update documentation as needed
 - Ensure all CI checks pass
 
-### Troubleshooting
+#### Troubleshooting
 
-### Common Issues
+#### Common Issues
 
 **Port already in use:**
 ```bash
@@ -255,7 +255,7 @@ make clean
 uv sync --dev
 ```
 
-### Acknowledgments
+#### Acknowledgments 
 
 - **FastAPI** team for the excellent web framework
 - **Nginx** for robust load balancing and reverse proxy

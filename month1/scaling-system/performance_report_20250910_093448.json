@@ -1,0 +1,41 @@
+{
+  "timestamp": "2025-09-10T09:34:00.820253",
+  "target_metrics": {
+    "response_time_target": "< 100ms for cached requests",
+    "throughput_target": "1000+ concurrent requests",
+    "availability_target": "99.9% uptime",
+    "scalability_target": "Horizontal scaling ready"
+  },
+  "response_times": {
+    "non_cached_response_time_ms": 13.26,
+    "cached_avg_response_time_ms": 10.48,
+    "cached_median_response_time_ms": 9.48,
+    "cached_95th_percentile_ms": 19.1,
+    "target_met": true,
+    "sample_size": 50
+  },
+  "scalability": {
+    "unique_servers_detected": 0,
+    "server_ids": [],
+    "load_balancing_working": false,
+    "horizontal_scaling_ready": false
+  },
+  "availability": {
+    "uptime_percentage": 100.0,
+    "total_checks": 6,
+    "successful_checks": 6,
+    "failed_checks": 0,
+    "downtime_periods": 0,
+    "total_downtime_seconds": 0,
+    "target_met": true
+  },
+  "throughput": {
+    "duration_seconds": 15.0,
+    "total_requests": 2164,
+    "successful_requests": 2164,
+    "failed_requests": 0,
+    "requests_per_second": 144.26,
+    "success_rate_percent": 100.0,
+    "target_met": false
+  }
+}
