@@ -102,9 +102,9 @@ This roadmap takes you from core fundamentals to advanced distributed systems, b
 | **Graceful Degradation**  | Reduce features on failure       | [Degradation Strategies](https://uxdesign.cc/graceful-degradation-in-ux-design-ff84b2f3f6d6)                               |                                                                                               |
 | **Blue-Green Deployment** | Swap between two environments    | [Blue-Green Guide](https://martinfowler.com/bliki/BlueGreenDeployment.html)                                                |                                                                                               |
 
-## **6-18** Month Backend Systems Design & Scaling Learning Plan
+## **6-18** Module Backend Systems Design & Scaling Learning Plan
 
-### Month 1 – Foundations & Core Concepts
+### Module 1 – Foundations & Core Concepts
 
 Goal: Understand the building blocks of large-scale systems.
 
@@ -128,7 +128,7 @@ Resources
 - [High Scalability Blog](http://highscalability.com/)
 - [Cloudflare CDN Guide](https://www.cloudflare.com/learning/cdn/what-is-a-cdn/)
 
-### Month 2 – Databases & Storage
+### Module 2 – Databases & Storage
 
 Goal: Learn how to scale and structure data.
 
@@ -155,7 +155,7 @@ Resources
 - [PostgreSQL Replication Docs](https://www.postgresql.org/docs/current/warm-standby.html)
 - [MongoDB Sharding Guide](https://www.mongodb.com/docs/manual/sharding/)
 
-### Month 3 – Asynchronous Processing & Messaging
+### Module 3 – Asynchronous Processing & Messaging
 
 Goal: Master async patterns for scalability.
 
@@ -184,7 +184,7 @@ Resources
 - [Kafka Streams Guide](https://kafka.apache.org/documentation/streams/)
 - [Service Mesh Intro – Istio](https://istio.io/latest/about/service-mesh/)
 
-### Month 4 – Reliability, Observability & Fault Tolerance
+### Module 4 – Reliability, Observability & Fault Tolerance
 
 Goal: Make systems resilient and debuggable.
 
@@ -213,7 +213,7 @@ Resources
 - [Prometheus Docs](https://prometheus.io/docs/introduction/overview/)
 - [Chaos Engineering Principles](https://principlesofchaos.org/)
 
-### Month 5 – Advanced Distributed Systems
+### Module 5 – Advanced Distributed Systems
 
 Goal: Handle complexity of multi-node systems.
 
@@ -240,7 +240,7 @@ Resources
 - Distributed Systems: Principles and Paradigms – Tanenbaum
 - [Microservices.io Patterns](https://microservices.io/)
 
-### Month 6 – Real-World Scale Architecture
+### Module 6 – Real-World Scale Architecture
 
 Goal: Integrate all concepts into one large-scale system.
 
