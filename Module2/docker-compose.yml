@@ -1,0 +1,133 @@
+
+version: "3.8"
+
+x-pg-env: &pg-env
+  POSTGRES_USER: postgres
+  POSTGRES_PASSWORD: example
+  POSTGRES_DB: module2_db
+
+services:
+  # PostgreSQL
+  pg-primary:
+    image: postgres:16
+    container_name: pg-primary
+    environment:
+      <<: *pg-env
+    ports: ["5432:5432"]
+    volumes:
+      - pg_primary_data:/var/lib/postgresql/data
+      - ./conf/pg-primary.conf:/etc/postgresql/postgresql.conf:ro
+      - ./conf/pg_hba_replica.conf:/etc/postgresql/pg_hba.conf:ro
+    command: ["postgres", "-c", "config_file=/etc/postgresql/postgresql.conf"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 3s
+      retries: 10
+
+  pg-replica:
+    image: postgres:16
+    container_name: pg-replica
+    depends_on:
+      pg-primary:
+        condition: service_healthy
+    environment:
+      <<: *pg-env
+      # used only if data dir is empty (first run)
+      PGPASSWORD: example
+    ports: ["5433:5432"]
+    volumes:
+      - pg_replica_data:/var/lib/postgresql/data
+      - ./scripts/init-replica.sh:/docker-entrypoint-initdb.d/init-replica.sh:ro
+    entrypoint: ["/bin/bash", "-c"]
+    command:
+      - |
+        # If data dir is empty, base-backup from primary
+        if [ ! -s /var/lib/postgresql/data/PG_VERSION ]; then
+          echo ">>> Taking base backup from pg-primary …"
+          rm -rf /var/lib/postgresql/data/*
+          pg_basebackup -h pg-primary -p 5432 -U postgres -D /var/lib/postgresql/data -Fp -Xs -P -R
+          echo "primary_conninfo = 'host=pg-primary port=5432 user=postgres password=example'" >> /var/lib/postgresql/data/postgresql.auto.conf
+          touch /var/lib/postgresql/data/standby.signal
+          chown -R postgres:postgres /var/lib/postgresql/data
+        fi
+        exec docker-entrypoint.sh postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 3s
+      retries: 10
+
+  # Second independent Postgres for manual sharding demo
+  pg-shard2:
+    image: postgres:16
+    container_name: pg-shard2
+    environment:
+      <<: *pg-env
+    ports: ["5442:5432"]
+    volumes:
+      - pg_shard2_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 3s
+      retries: 10
+
+  # ScyllaDB (3-node cluster)
+  scylla-node1:
+    image: scylladb/scylla:5.4
+    container_name: scylla-node1
+    command: --seeds=scylla-node1 --smp 1 --memory 512M --overprovisioned 1 --api-address 0.0.0.0
+    ports:
+      - "9042:9042"     # CQL native
+      - "10000:10000"   # REST API
+    volumes:
+      - scylla1_data:/var/lib/scylla
+    healthcheck:
+      test: ["CMD-SHELL", "cqlsh -e 'SELECT now() FROM system.local' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+
+  scylla-node2:
+    image: scylladb/scylla:5.4
+    container_name: scylla-node2
+    command: --seeds=scylla-node1 --smp 1 --memory 512M --overprovisioned 1 --api-address 0.0.0.0
+    ports:
+      - "9142:9042"
+    volumes:
+      - scylla2_data:/var/lib/scylla
+    depends_on:
+      scylla-node1:
+        condition: service_healthy
+
+  scylla-node3:
+    image: scylladb/scylla:5.4
+    container_name: scylla-node3
+    command: --seeds=scylla-node1 --smp 1 --memory 512M --overprovisioned 1 --api-address 0.0.0.0
+    ports:
+      - "9242:9042"
+    volumes:
+      - scylla3_data:/var/lib/scylla
+    depends_on:
+      scylla-node1:
+        condition: service_healthy
+
+  # MongoDB (single-node RS)
+  mongodb:
+    image: mongo:7
+    container_name: mongodb
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
+    ports: ["27017:27017"]
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      retries: 10
+
+volumes:
+  pg_primary_data:
+  pg_replica_data:
+  pg_shard2_data:
+  scylla1_data:
+  scylla2_data:
+  scylla3_data:
+  mongo_data:

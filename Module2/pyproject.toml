@@ -1,0 +1,17 @@
+[project]
+name = "module2-databases-and-storage"
+version = "0.1.0"
+description = "Module 2 – Databases & Storage hands-on mini-project"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "psycopg[binary]>=3.1,<4",
+    "pymongo>=4.5,<5",
+    "cassandra-driver>=3.25,<4",
+]
+
+[project.scripts]
+demo-replication = "module2_app.demo_replication:main"
+demo-sharding    = "module2_app.demo_sharding:main"
+demo-scylla      = "module2_app.scylla_demo:main"
+demo-mongo       = "module2_app.mongo_consistency_demo:main"
