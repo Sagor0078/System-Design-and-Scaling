@@ -143,7 +143,7 @@ Topics
 
 Hands-On
 
-- Mini Project:
+- [Mini Project](https://github.com/Sagor0078/System-Design-and-Scaling/tree/main/Module2)
 
 1. PostgreSQL with read replicas
 2. Implement sharding manually (range/hash partitioning)
@@ -274,3 +274,10 @@ Resources
 
 Every topic → Theory (2-3 days) → Small implementation (2-3 days) → Integrate into ongoing capstone project.
 By the end, we’ll have a portfolio of 6 projects showcasing all major backend scaling patterns.
+
+
+## References
+
+- [How to build distributed systems](https://builddistributedsystem.com/)
+- [Iximiuz Labs - DevOps](https://labs.iximiuz.com/)
+- [Designing Data-Intensive Applications](https://www.oreilly.com/library/view/designing-data-intensive-applications/9781098119058/)
