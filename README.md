@@ -270,13 +270,8 @@ Resources
 - [Netflix Tech Blog](https://netflixtechblog.com/)
 - [Uber Engineering Blog](https://eng.uber.com/)
 
-### The Workflow
 
-Every topic → Theory (2-3 days) → Small implementation (2-3 days) → Integrate into ongoing capstone project.
-By the end, we’ll have a portfolio of 6 projects showcasing all major backend scaling patterns.
-
-
-## References
+## Recommended resources
 
 - [How to build distributed systems](https://builddistributedsystem.com/)
 - [Iximiuz Labs - DevOps](https://labs.iximiuz.com/)
