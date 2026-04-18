@@ -1,40 +1,102 @@
-### Low Level Design
+# Concurrency in Python: Correctness, Coordination, Scarcity
 
 ![Concurrency Diagram](concurrency.drawio.png)
 
-#### Correctness Issues
+This folder gives practical, runnable examples of the three most common concurrency design problems.
 
-Correctness problems occur when shared state is corrupted because multiple threads access it simultaneously. The video identifies two main patterns:
+## What You Will Learn
 
-- Check-Then-Act: You check a condition (e.g., "is seat 7A available?") and then act (e.g., "book it"). If another thread acts between your check and your action, a bug occurs.
+- Correctness: how race conditions corrupt shared state.
+- Coordination: how threads safely hand work to each other.
+- Scarcity: how to protect a limited resource from overload.
 
-- Read-Modify-Write: You read a value, change it, and write it back (e.g., count++). If two threads do this at once, an increment can be lost.
+## Quick Start
 
-- Solutions: Use Locks (Mutex, Synchronized blocks) to make the operation atomic, or use Atomic Variables (like AtomicInteger in Java) for simple counters.
+From this folder, run:
 
-#### Coordination Issues 
+```bash
+python3 correctness.py
+python3 coordination.py
+python3 scarcity.py
+```
 
-Coordination is about how threads communicate and pass work to each other (e.g., an API thread handing an email task to a background worker).
+## Concept Map
 
-- The Problem: How does a worker know when new work arrives without wasting CPU cycles by "spinning" in a loop? 
+| Problem Type | Main Question | Primary Tool | Example Script |
+| --- | --- | --- | --- |
+| Correctness | "Can two threads update the same state safely?" | `threading.Lock` | `correctness.py` |
+| Coordination | "How do workers wait for and receive work?" | `queue.Queue` (bounded, blocking) | `coordination.py` |
+| Scarcity | "How do we enforce a hard concurrency limit?" | `threading.Semaphore` | `scarcity.py` |
 
-- The Solution: Use a Blocking Queue. This allows a worker thread to "sleep" when the queue is empty and wake up instantly when work is added.
+## 1) Correctness
 
-- Back Pressure: Use a Bounded Blocking Queue (setting a max size). This prevents the system from running out of memory if work arrives faster than it can be processed.
+Correctness issues happen when multiple threads read and write shared state without synchronization.
 
-####  Scarcity Issues
+Common bug patterns:
 
-Scarcity involves limiting access to a finite number of resources (e.g., only 10 concurrent connections to an external API).
+- Check-Then-Act: one thread checks a condition, but another thread changes state before the action happens.
+- Read-Modify-Write: two threads read the same value and both write an updated value, causing lost updates.
 
-- Semaphores: Think of these as a bucket of permits. A thread must acquire a permit to act and release it when done.
+How this repo demonstrates it:
 
-- Resource Pools: For objects with state (like Database Connections), you can use a Blocking Queue to hold the objects. Threads "take" a connection and "put" it back when finished.
+- `correctness.py` runs unsafe counter updates and booking logic first.
+- Then it repeats the same logic with a lock.
 
-- Crucial Step: Always use a try-finally block to ensure the resource/permit is released even if an error occurs, preventing a system-wide "halt".
+Expected result:
 
+- Unsafe output often shows wrong totals or inconsistent booking outcomes.
+- Safe output matches expected totals and one consistent seat owner.
 
-To solve any concurrency problem, ask:
+## 2) Coordination
 
-- Is there shared state? Focus on Correctness (Locks/Atomics).
-- Is work flowing between threads? Focus on Coordination (Blocking Queues).
-- Is there a fixed limit on resources? Focus on Scarcity (Semaphores/Pools).
+Coordination is about passing work between threads without busy waiting.
+
+Key idea:
+
+- Use a blocking queue so workers sleep when there is no work and wake when tasks arrive.
+
+How this repo demonstrates it:
+
+- `coordination.py` starts producers and workers.
+- A bounded queue applies back pressure when producers are faster than workers.
+- Sentinel values stop workers cleanly after all tasks finish.
+
+Expected result:
+
+- Producers enqueue tasks.
+- Workers process tasks in parallel.
+- Program exits cleanly after all tasks complete.
+
+## 3) Scarcity
+
+Scarcity means a resource has a strict limit, such as database connections or external API capacity.
+
+Key idea:
+
+- Use a semaphore as a permit bucket.
+- A thread must acquire a permit before using the resource.
+
+How this repo demonstrates it:
+
+- `scarcity.py` limits concurrent API calls with `threading.Semaphore`.
+- It tracks active calls and peak concurrency.
+- `try/finally` guarantees permit release, even on failures.
+
+Expected result:
+
+- Peak active calls should never exceed the configured limit.
+
+## Decision Checklist
+
+When debugging a concurrency issue, ask:
+
+- Is state shared and mutable across threads? Choose correctness tools (locks/atomics).
+- Is work being transferred between threads? Choose coordination tools (blocking queues).
+- Is there a hard cap on resources? Choose scarcity tools (semaphores/resource pools).
+
+## Practical Rules of Thumb
+
+- Keep critical sections small and focused.
+- Prefer message passing (queues) over shared mutable state when possible.
+- Always release permits/resources in `finally` blocks.
+- Add load tests for timing-sensitive code paths.
