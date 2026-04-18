@@ -1,0 +1,158 @@
+version: "3.9"
+
+services:
+  # ============================================================
+  # PostgreSQL – Source Database
+  # ============================================================
+  postgres:
+    image: postgres:16-alpine
+    container_name: cdc_postgres
+    environment:
+      POSTGRES_USER: cdc_user
+      POSTGRES_PASSWORD: cdc_pass
+      POSTGRES_DB: cdc_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db:/docker-entrypoint-initdb.d
+    command:
+      - "postgres"
+      - "-c"
+      - "wal_level=logical"          # Required for Debezium logical replication
+      - "-c"
+      - "max_replication_slots=4"
+      - "-c"
+      - "max_wal_senders=4"
+    networks:
+      - cdc_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cdc_user -d cdc_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # ============================================================
+  # Zookeeper – Kafka cluster manager
+  # ============================================================
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.6.0
+    container_name: cdc_zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    networks:
+      - cdc_network
+    healthcheck:
+      test: ["CMD", "echo", "ruok", "|", "nc", "localhost", "2181"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ============================================================
+  # Kafka – Message Broker
+  # ============================================================
+  kafka:
+    image: confluentinc/cp-kafka:7.6.0
+    container_name: cdc_kafka
+    depends_on:
+      zookeeper:
+        condition: service_started
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    ports:
+      - "29092:29092"
+    networks:
+      - cdc_network
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "kafka:9092"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+
+  # ============================================================
+  # Schema Registry – Message schema management
+  # ============================================================
+  schema-registry:
+    image: confluentinc/cp-schema-registry:7.6.0
+    container_name: cdc_schema_registry
+    depends_on:
+      kafka:
+        condition: service_started
+    environment:
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: kafka:9092
+      SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
+    ports:
+      - "8081:8081"
+    networks:
+      - cdc_network
+
+  # ============================================================
+  # Kafka UI – Web dashboard to inspect topics & messages
+  # ============================================================
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: cdc_kafka_ui
+    depends_on:
+      kafka:
+        condition: service_started
+      schema-registry:
+        condition: service_started
+    environment:
+      KAFKA_CLUSTERS_0_NAME: cdc-cluster
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+      KAFKA_CLUSTERS_0_SCHEMAREGISTRY: http://schema-registry:8081
+      KAFKA_CLUSTERS_0_KAFKACONNECT_0_NAME: debezium
+      KAFKA_CLUSTERS_0_KAFKACONNECT_0_ADDRESS: http://debezium:8083
+    ports:
+      - "8080:8080"
+    networks:
+      - cdc_network
+
+  # ============================================================
+  # Debezium Connect – CDC connector (PostgreSQL → Kafka)
+  # ============================================================
+  debezium:
+    image: debezium/connect:2.5
+    container_name: cdc_debezium
+    depends_on:
+      kafka:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+    environment:
+      GROUP_ID: 1
+      CONFIG_STORAGE_TOPIC: debezium_configs
+      OFFSET_STORAGE_TOPIC: debezium_offsets
+      STATUS_STORAGE_TOPIC: debezium_statuses
+      BOOTSTRAP_SERVERS: kafka:9092
+      KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+    ports:
+      - "8083:8083"
+    networks:
+      - cdc_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8083/connectors"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 30s
+
+volumes:
+  postgres_data:
+
+networks:
+  cdc_network:
+    driver: bridge
