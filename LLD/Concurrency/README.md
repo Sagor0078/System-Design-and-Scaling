@@ -1,6 +1,6 @@
 ### Low Level Design
 
-[![Directory docs](System-Design-and-Scaling/images/concurrency.drawio.png)](https://github.com/Sagor0078/System-Design-and-Scaling)
+[![Directory docs](LLD/Concurrency/concurrency.drawio.png)](https://github.com/Sagor0078/System-Design-and-Scaling)
 
 #### Correctness Issues
 
