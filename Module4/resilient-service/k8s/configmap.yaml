@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: orders-config
+  namespace: module4
+data:
+  INVENTORY_URL: "http://inventory:8001"
+  REQUEST_TIMEOUT: "1.0"
+  BREAKER_FAILURE_THRESHOLD: "5"
+  BREAKER_RECOVERY_TIMEOUT: "15"
+  BREAKER_SUCCESS_THRESHOLD: "2"
+  RETRY_MAX_ATTEMPTS: "3"
+  RETRY_BASE_DELAY: "0.05"
+  RETRY_MAX_DELAY: "0.5"
+  CACHE_TTL: "30"
+  # Empty means tracing is skipped rather than failing. Point this at a
+  # collector Service to turn traces on.
+  OTEL_EXPORTER_OTLP_ENDPOINT: ""
