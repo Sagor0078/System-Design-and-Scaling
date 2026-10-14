@@ -110,17 +110,22 @@ class CircuitBreaker:
 
     def call(self, fn: Callable[..., Any], *args: Any, **kwargs: Any) -> Any:
         """Run ``fn`` through the breaker, or reject it without calling."""
-        is_probe = self._acquire()
+        is_probe = self.acquire()
         try:
             result = fn(*args, **kwargs)
         except BaseException:
-            self._record_failure(is_probe)
+            self.record_failure(is_probe)
             raise
-        self._record_success(is_probe)
+        self.record_success(is_probe)
         return result
 
-    def _acquire(self) -> bool:
-        """Reserve the right to call through. Returns True for a probe call."""
+    def acquire(self) -> bool:
+        """Reserve the right to call through. Returns True for a probe call.
+
+        Public because async callers cannot use :meth:`call` -- they acquire,
+        await their coroutine, then report the outcome through
+        :meth:`record_success` or :meth:`record_failure`.
+        """
         with self._lock:
             transition = self._maybe_half_open()
             state = self._state
@@ -142,7 +147,7 @@ class CircuitBreaker:
         self._notify(transition)
         return False
 
-    def _record_success(self, is_probe: bool) -> None:
+    def record_success(self, is_probe: bool) -> None:
         with self._lock:
             if is_probe:
                 self._half_open_in_flight = max(0, self._half_open_in_flight - 1)
@@ -156,7 +161,7 @@ class CircuitBreaker:
                 transition = None
         self._notify(transition)
 
-    def _record_failure(self, is_probe: bool) -> None:
+    def record_failure(self, is_probe: bool) -> None:
         with self._lock:
             if is_probe:
                 self._half_open_in_flight = max(0, self._half_open_in_flight - 1)
