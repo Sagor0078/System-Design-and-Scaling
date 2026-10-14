@@ -1,0 +1,21 @@
+# A null receiver on purpose. Module 4 is about the wiring -- rule evaluation,
+# grouping, inhibition -- not about paging anyone at 3am. Swap in a Slack or
+# webhook receiver to make it real.
+global:
+  resolve_timeout: 2m
+
+route:
+  receiver: "null"
+  group_by: ["alertname", "severity"]
+  group_wait: 10s
+  group_interval: 30s
+  repeat_interval: 1h
+
+receivers:
+  - name: "null"
+
+inhibit_rules:
+  # A down target explains its own breaker alert; do not page for both.
+  - source_matchers: [severity="critical"]
+    target_matchers: [severity="warning"]
+    equal: ["alertname"]

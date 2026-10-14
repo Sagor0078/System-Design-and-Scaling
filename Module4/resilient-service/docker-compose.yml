@@ -1,0 +1,161 @@
+# Module 4 - reliability, observability and fault tolerance.
+#
+# orders is the system under test; inventory is the dependency you break.
+# Everything else is the observability plane: metrics, traces, alerts, dashboards.
+
+services:
+  # ============================================================
+  # Orders - the resilient service
+  # ============================================================
+  orders:
+    build: .
+    container_name: m4_orders
+    command: ["uvicorn", "orders.main:app", "--host", "0.0.0.0", "--port", "8000"]
+    environment:
+      SERVICE_NAME: orders
+      INVENTORY_URL: http://inventory:8001
+      REQUEST_TIMEOUT: "1.0"
+      BREAKER_FAILURE_THRESHOLD: "5"
+      BREAKER_RECOVERY_TIMEOUT: "15"
+      BREAKER_SUCCESS_THRESHOLD: "2"
+      RETRY_MAX_ATTEMPTS: "3"
+      RETRY_BASE_DELAY: "0.05"
+      RETRY_MAX_DELAY: "0.5"
+      CACHE_TTL: "30"
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+    ports:
+      - "8000:8000"
+    depends_on:
+      inventory:
+        condition: service_healthy
+    networks:
+      - module4_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # ============================================================
+  # Inventory - the dependency with chaos controls
+  # ============================================================
+  inventory:
+    build: .
+    container_name: m4_inventory
+    command: ["uvicorn", "inventory.main:app", "--host", "0.0.0.0", "--port", "8001"]
+    environment:
+      SERVICE_NAME: inventory
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+    ports:
+      - "8001:8001"
+    networks:
+      - module4_network
+    healthcheck:
+      # Liveness, not readiness: a chaos-downed inventory is still a live
+      # process, and compose should not restart it out from under an experiment.
+      test: ["CMD", "curl", "-f", "http://localhost:8001/health/live"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  # ============================================================
+  # Prometheus - metrics + alert rule evaluation
+  # ============================================================
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    container_name: m4_prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.time=6h"
+      - "--web.enable-lifecycle"
+    volumes:
+      - ./prometheus:/etc/prometheus:ro
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - module4_network
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ============================================================
+  # Alertmanager - alert routing (null receiver; wiring is the lesson)
+  # ============================================================
+  alertmanager:
+    image: prom/alertmanager:v0.27.0
+    container_name: m4_alertmanager
+    command:
+      - "--config.file=/etc/alertmanager/alertmanager.yml"
+    volumes:
+      - ./alertmanager:/etc/alertmanager:ro
+    ports:
+      - "9093:9093"
+    networks:
+      - module4_network
+
+  # ============================================================
+  # OpenTelemetry Collector - receives OTLP, forwards to Jaeger
+  # ============================================================
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.115.1
+    container_name: m4_otel_collector
+    command: ["--config=/etc/otel/collector-config.yaml"]
+    volumes:
+      - ./otel:/etc/otel:ro
+    ports:
+      - "4317:4317"   # OTLP gRPC
+      - "4318:4318"   # OTLP HTTP
+    depends_on:
+      - jaeger
+    networks:
+      - module4_network
+
+  # ============================================================
+  # Jaeger - trace storage and UI
+  # ============================================================
+  jaeger:
+    image: jaegertracing/all-in-one:1.62.0
+    container_name: m4_jaeger
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+    ports:
+      - "16686:16686"  # UI
+    networks:
+      - module4_network
+
+  # ============================================================
+  # Grafana - provisioned datasource + dashboard
+  # ============================================================
+  grafana:
+    image: grafana/grafana:11.4.0
+    container_name: m4_grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+      GF_USERS_DEFAULT_THEME: dark
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana_data:/var/lib/grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    networks:
+      - module4_network
+
+volumes:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  module4_network:
+    driver: bridge

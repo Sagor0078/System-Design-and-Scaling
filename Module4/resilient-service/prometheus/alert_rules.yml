@@ -1,0 +1,50 @@
+groups:
+  - name: reliability
+    rules:
+      # Degraded responses are 200s on purpose, so this fires only on real
+      # failures (cold-cache 503s), not on graceful degradation.
+      - alert: HighErrorRate
+        expr: |
+          sum(rate(http_requests_total{job="orders",status=~"5.."}[2m]))
+            / clamp_min(sum(rate(http_requests_total{job="orders"}[2m])), 0.001) > 0.05
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "orders 5xx rate above 5% for 2m"
+          description: "Cold-cache rejections, not degradation. Check inventory."
+
+      - alert: CircuitBreakerOpen
+        expr: circuit_breaker_state{dependency="inventory"} == 2
+        for: 30s
+        labels:
+          severity: warning
+        annotations:
+          summary: "circuit breaker to inventory is OPEN"
+          description: "orders is shedding calls to inventory and serving stale stock."
+
+      - alert: HighLatencyP95
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(http_request_duration_seconds_bucket{job="orders"}[5m])) by (le)) > 1
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "orders p95 latency above 1s for 2m"
+
+      - alert: DegradedServing
+        expr: rate(degraded_responses_total[2m]) > 0
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "orders is serving stale inventory data"
+
+      - alert: TargetDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "{{ $labels.job }} target is down"
