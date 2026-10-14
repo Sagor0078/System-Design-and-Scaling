@@ -169,9 +169,37 @@ class Experiment:
     run: Callable[[httpx.AsyncClient, int], Awaitable[list[tuple[str, bool]]]] = field(repr=False)
 
 
+async def wait_for_closed(client: httpx.AsyncClient, timeout: float = 60.0) -> bool:
+    """Block until the breaker is CLOSED again.
+
+    Experiments must not inherit each other's breaker state. Without this, the
+    experiment after an outage starts with an open circuit, every call
+    short-circuits to the fallback, and assertions about retries and timeouts
+    fail for reasons that have nothing to do with the hypothesis under test.
+    """
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        state = gauge_value(
+            await scrape(client, ORDERS_URL),
+            "circuit_breaker_state",
+            {"dependency": "inventory"},
+        )
+        if state == 0.0:
+            return True
+        # Half-open needs successful probe traffic to close; drive some.
+        await place_orders(client, 2)
+        await asyncio.sleep(2)
+    return False
+
+
 async def warm_the_cache(client: httpx.AsyncClient) -> None:
-    """A fallback can only be served if something was cached first."""
+    """Put each experiment in a known-good starting state.
+
+    A fallback can only be served if something was cached first, and a
+    breaker-dependent assertion is only meaningful from a closed circuit.
+    """
     await reset_chaos(client)
+    await wait_for_closed(client)
     await place_orders(client, 3)
 
 
@@ -212,7 +240,9 @@ async def exp_latency(client: httpx.AsyncClient, duration: int) -> list[tuple[st
     degraded = counter_delta(before, after, "degraded_responses_total", {"route": "/orders"})
 
     return [
-        ("timeouts were retried", retries > len(statuses)),
+        # More attempts than failed calls proves retrying happened: each failed
+        # call burns RETRY_MAX_ATTEMPTS attempts before giving up.
+        ("timeouts were retried", failures > 0 and retries > failures),
         ("calls were recorded as failures", failures > 0),
         ("stale data was served", degraded > 0),
         ("no 5xx reached the client", all(s in (200, 201) for s in statuses)),
