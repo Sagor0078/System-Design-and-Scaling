@@ -1,0 +1,10 @@
+[project]
+name = "resilient-service"
+version = "0.1.0"
+description = "Module 4 - reliability, observability and fault tolerance demo"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = []
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
