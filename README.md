@@ -102,182 +102,6 @@ This roadmap takes you from core fundamentals to advanced distributed systems, b
 | **Graceful Degradation**  | Reduce features on failure       | [SRE Book – Handling Overload](https://sre.google/sre-book/handling-overload/)                               |                                                                                               |
 | **Blue-Green Deployment** | Swap between two environments    | [Blue-Green Guide](https://martinfowler.com/bliki/BlueGreenDeployment.html)                                                |                                                                                               |
 
-## **6-18** Module Backend Systems Design & Scaling Learning Plan
-
-### Module 1 – Foundations & Core Concepts
-
-Goal: Understand the building blocks of large-scale systems.
-
-Topics
-- Scaling basics → Vertical vs horizontal scaling
-- CDN & Caching strategies → Browser cache, Redis/Memcached, HTTP caching headers
-- Load Balancing → Round Robin, Least Connections, Consistent Hashing
-- API Gateway basics → Routing, authentication, throttling
-- Rate Limiting → Token Bucket, Leaky Bucket
-- Monolith vs Microservices → When to split
-
-Hands-On
-
-- [Mini Project](https://github.com/Sagor0078/System-Design-and-Scaling/tree/main/Module1/scaling-system):
-1. Build a simple FastAPI app with Redis caching and Nginx load balancing
-2. Add an API Gateway (Kong or Nginx) in front of it
-3. Implement rate limiting using Redis
-
-Resources
-- [System Design Primer](https://github.com/donnemartin/system-design-primer)
-- [High Scalability Blog](http://highscalability.com/)
-- [Cloudflare CDN Guide](https://www.cloudflare.com/learning/cdn/what-is-a-cdn/)
-
-### Module 2 – Databases & Storage
-
-Goal: Learn how to scale and structure data.
-
-Topics
-- SQL vs NoSQL – Trade-offs
-- Indexing & B+ Trees
-- Leader-Follower Replication & WAL
-- Sharding & Partitioning
-- Hot/Cold Storage
-- Backup & Restore strategies
-- ACID vs BASE & Consistency Models
-
-Hands-On
-
-- [Mini Project](https://github.com/Sagor0078/System-Design-and-Scaling/tree/main/Module2)
-
-1. PostgreSQL with read replicas
-2. Implement sharding manually (range/hash partitioning)
-3. Add backup & restore scripts
-4. Compare strong vs eventual consistency with MongoDB or Cassandra
-
-Resources
-- Designing Data-Intensive Applications (DDIA) – Chapters 1-5
-- [PostgreSQL Replication Docs](https://www.postgresql.org/docs/current/warm-standby.html)
-- [MongoDB Sharding Guide](https://www.mongodb.com/docs/manual/sharding/)
-
-### Module 3 – Asynchronous Processing & Messaging
-
-Goal: Master async patterns for scalability.
-
-Topics
-
-- Queueing – RabbitMQ, Kafka, AWS SQS
-- Dead Letter Queues
-- Fan-out/Fan-in patterns
-- Retry Patterns & Circuit Breaker
-- Long Polling vs WebSockets
-- Service Mesh basics
-
-Hands-On
-
-- [Mini Project](https://github.com/Sagor0078/System-Design-and-Scaling/tree/main/Module3):
-
-1. Event-driven order processing system
-2. Producer → Queue → Consumer
-3. DLQ for failed tasks
-4. Retry with exponential backoff
-5. WebSocket for real-time status updates
-
-Resources
-
-- [RabbitMQ Tutorial](https://www.rabbitmq.com/tutorials/tutorial-one-python.html)
-- [Kafka Streams Guide](https://kafka.apache.org/documentation/streams/)
-- [Service Mesh Intro – Istio](https://istio.io/latest/about/service-mesh/)
-
-### Module 4 – Reliability, Observability & Fault Tolerance
-
-Goal: Make systems resilient and debuggable.
-
-Topics
-
-- Fault Tolerance & Failover
-- Distributed Tracing (OpenTelemetry, Jaeger)
-- Metrics & Monitoring (Prometheus + Grafana)
-- Alerting & Incident Response
-- Health Checks & Graceful Degradation
-- Chaos Engineering (Netflix Chaos Monkey)
-
-Hands-On
-
-- [Mini Project](https://github.com/Sagor0078/System-Design-and-Scaling/tree/main/Module4):
-
-1. Deploy on Kubernetes (manifests in `Module4/resilient-service/k8s/`)
-2. Add health checks, liveness/readiness probes
-3. Implement autoscaling based on CPU/memory
-4. Add Prometheus + Grafana dashboards
-5. Simulate failures & verify fault tolerance
-
-Resources
-
-- [Google SRE Book – full table of contents](https://sre.google/sre-book/table-of-contents/)
-  - [Ch. 3 Embracing Risk](https://sre.google/sre-book/embracing-risk/) · [Ch. 4 SLOs](https://sre.google/sre-book/service-level-objectives/) · [Ch. 21 Handling Overload](https://sre.google/sre-book/handling-overload/) · [Ch. 22 Addressing Cascading Failures](https://sre.google/sre-book/addressing-cascading-failures/)
-- [Google SRE Workbook](https://sre.google/workbook/table-of-contents/) – the practical companion
-- [Prometheus Docs](https://prometheus.io/docs/introduction/overview/)
-- [Chaos Engineering Principles](https://principlesofchaos.org/)
-- [AWS Builders' Library – Timeouts, retries and backoff with jitter](https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/)
-- [AWS Builders' Library – Implementing health checks](https://aws.amazon.com/builders-library/implementing-health-checks/)
-- [Kubernetes – Liveness, readiness & startup probes](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/)
-- [Jaeger Docs](https://www.jaegertracing.io/docs/latest/) · [OpenTelemetry – Traces](https://opentelemetry.io/docs/concepts/signals/traces/)
-- [Netflix Chaos Monkey](https://netflix.github.io/chaosmonkey/) · [Chaos Mesh](https://github.com/chaos-mesh/chaos-mesh) (Kubernetes-native)
-
-### Module 5 – Advanced Distributed Systems
-
-Goal: Handle complexity of multi-node systems.
-
-Topics
-- CAP Theorem deep dive
-- Leader Election (Raft, Paxos)
-- Distributed Transactions – 2PC, Saga Pattern
-- Eventual Consistency
-- Consistent Hashing
-- Service Discovery (Consul, Eureka)
-
-Hands-On
-
-- Mini Project:
-
-1. Build a distributed key-value store (in Go or Python)
-2. Implement leader election with Raft
-3. Support consistent hashing for partitioning
-4. Add service discovery with Consul
-
-Resources
-
-- [Raft Visualization](https://raft.github.io/)
-- Distributed Systems: Principles and Paradigms – Tanenbaum
-- [Microservices.io Patterns](https://microservices.io/)
-
-### Module 6 – Real-World Scale Architecture
-
-Goal: Integrate all concepts into one large-scale system.
-
-Topics
-- API Security – JWT, OAuth, CORS, Idempotency
-- Blue-Green & Canary Deployments
-- Data Retention & Compliance
-- OLAP vs OLTP optimization
-- Graceful Rollbacks
-
-Hands-On – Capstone Project
-
-- High-scale e-commerce backend with:
-
-1. API Gateway & microservices
-2. PostgreSQL sharding + read replicas
-3. Redis caching layer
-4. Kafka-based async processing
-5. Prometheus + Grafana monitoring
-6. Kubernetes autoscaling
-7. Canary deployment strategy
-8. Disaster recovery & backup scripts
-
-Resources
-
-- [AWS Architecture Blog](https://aws.amazon.com/architecture/)
-- [Netflix Tech Blog](https://netflixtechblog.com/)
-- [Uber Engineering Blog](https://eng.uber.com/)
-
-
 ## Platform & Infrastructure — Production Operations
 
 The stack this repository's infrastructure actually runs on: managed Kubernetes,
@@ -531,3 +355,179 @@ recommendations — any system where "find the nearest thing" is the query.
 - [All Things Distributed](https://www.allthingsdistributed.com/) – Werner Vogels
 - [AWS Builders' Library](https://aws.amazon.com/builders-library/) – how AWS actually builds for reliability
 - [High Scalability](https://highscalability.com/) · [Arpit Bhayani](https://arpitbhayani.me/blogs) · [System Design One](https://systemdesign.one/)
+
+## **6-18** Module Backend Systems Design & Scaling Learning Plan
+
+### Module 1 – Foundations & Core Concepts
+
+Goal: Understand the building blocks of large-scale systems.
+
+Topics
+- Scaling basics → Vertical vs horizontal scaling
+- CDN & Caching strategies → Browser cache, Redis/Memcached, HTTP caching headers
+- Load Balancing → Round Robin, Least Connections, Consistent Hashing
+- API Gateway basics → Routing, authentication, throttling
+- Rate Limiting → Token Bucket, Leaky Bucket
+- Monolith vs Microservices → When to split
+
+Hands-On
+
+- [Mini Project](https://github.com/Sagor0078/System-Design-and-Scaling/tree/main/Module1/scaling-system):
+1. Build a simple FastAPI app with Redis caching and Nginx load balancing
+2. Add an API Gateway (Kong or Nginx) in front of it
+3. Implement rate limiting using Redis
+
+Resources
+- [System Design Primer](https://github.com/donnemartin/system-design-primer)
+- [High Scalability Blog](http://highscalability.com/)
+- [Cloudflare CDN Guide](https://www.cloudflare.com/learning/cdn/what-is-a-cdn/)
+
+### Module 2 – Databases & Storage
+
+Goal: Learn how to scale and structure data.
+
+Topics
+- SQL vs NoSQL – Trade-offs
+- Indexing & B+ Trees
+- Leader-Follower Replication & WAL
+- Sharding & Partitioning
+- Hot/Cold Storage
+- Backup & Restore strategies
+- ACID vs BASE & Consistency Models
+
+Hands-On
+
+- [Mini Project](https://github.com/Sagor0078/System-Design-and-Scaling/tree/main/Module2)
+
+1. PostgreSQL with read replicas
+2. Implement sharding manually (range/hash partitioning)
+3. Add backup & restore scripts
+4. Compare strong vs eventual consistency with MongoDB or Cassandra
+
+Resources
+- Designing Data-Intensive Applications (DDIA) – Chapters 1-5
+- [PostgreSQL Replication Docs](https://www.postgresql.org/docs/current/warm-standby.html)
+- [MongoDB Sharding Guide](https://www.mongodb.com/docs/manual/sharding/)
+
+### Module 3 – Asynchronous Processing & Messaging
+
+Goal: Master async patterns for scalability.
+
+Topics
+
+- Queueing – RabbitMQ, Kafka, AWS SQS
+- Dead Letter Queues
+- Fan-out/Fan-in patterns
+- Retry Patterns & Circuit Breaker
+- Long Polling vs WebSockets
+- Service Mesh basics
+
+Hands-On
+
+- [Mini Project](https://github.com/Sagor0078/System-Design-and-Scaling/tree/main/Module3):
+
+1. Event-driven order processing system
+2. Producer → Queue → Consumer
+3. DLQ for failed tasks
+4. Retry with exponential backoff
+5. WebSocket for real-time status updates
+
+Resources
+
+- [RabbitMQ Tutorial](https://www.rabbitmq.com/tutorials/tutorial-one-python.html)
+- [Kafka Streams Guide](https://kafka.apache.org/documentation/streams/)
+- [Service Mesh Intro – Istio](https://istio.io/latest/about/service-mesh/)
+
+### Module 4 – Reliability, Observability & Fault Tolerance
+
+Goal: Make systems resilient and debuggable.
+
+Topics
+
+- Fault Tolerance & Failover
+- Distributed Tracing (OpenTelemetry, Jaeger)
+- Metrics & Monitoring (Prometheus + Grafana)
+- Alerting & Incident Response
+- Health Checks & Graceful Degradation
+- Chaos Engineering (Netflix Chaos Monkey)
+
+Hands-On
+
+- [Mini Project](https://github.com/Sagor0078/System-Design-and-Scaling/tree/main/Module4):
+
+1. Deploy on Kubernetes (manifests in `Module4/resilient-service/k8s/`)
+2. Add health checks, liveness/readiness probes
+3. Implement autoscaling based on CPU/memory
+4. Add Prometheus + Grafana dashboards
+5. Simulate failures & verify fault tolerance
+
+Resources
+
+- [Google SRE Book – full table of contents](https://sre.google/sre-book/table-of-contents/)
+  - [Ch. 3 Embracing Risk](https://sre.google/sre-book/embracing-risk/) · [Ch. 4 SLOs](https://sre.google/sre-book/service-level-objectives/) · [Ch. 21 Handling Overload](https://sre.google/sre-book/handling-overload/) · [Ch. 22 Addressing Cascading Failures](https://sre.google/sre-book/addressing-cascading-failures/)
+- [Google SRE Workbook](https://sre.google/workbook/table-of-contents/) – the practical companion
+- [Prometheus Docs](https://prometheus.io/docs/introduction/overview/)
+- [Chaos Engineering Principles](https://principlesofchaos.org/)
+- [AWS Builders' Library – Timeouts, retries and backoff with jitter](https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/)
+- [AWS Builders' Library – Implementing health checks](https://aws.amazon.com/builders-library/implementing-health-checks/)
+- [Kubernetes – Liveness, readiness & startup probes](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/)
+- [Jaeger Docs](https://www.jaegertracing.io/docs/latest/) · [OpenTelemetry – Traces](https://opentelemetry.io/docs/concepts/signals/traces/)
+- [Netflix Chaos Monkey](https://netflix.github.io/chaosmonkey/) · [Chaos Mesh](https://github.com/chaos-mesh/chaos-mesh) (Kubernetes-native)
+
+### Module 5 – Advanced Distributed Systems
+
+Goal: Handle complexity of multi-node systems.
+
+Topics
+- CAP Theorem deep dive
+- Leader Election (Raft, Paxos)
+- Distributed Transactions – 2PC, Saga Pattern
+- Eventual Consistency
+- Consistent Hashing
+- Service Discovery (Consul, Eureka)
+
+Hands-On
+
+- Mini Project:
+
+1. Build a distributed key-value store (in Go or Python)
+2. Implement leader election with Raft
+3. Support consistent hashing for partitioning
+4. Add service discovery with Consul
+
+Resources
+
+- [Raft Visualization](https://raft.github.io/)
+- Distributed Systems: Principles and Paradigms – Tanenbaum
+- [Microservices.io Patterns](https://microservices.io/)
+
+### Module 6 – Real-World Scale Architecture
+
+Goal: Integrate all concepts into one large-scale system.
+
+Topics
+- API Security – JWT, OAuth, CORS, Idempotency
+- Blue-Green & Canary Deployments
+- Data Retention & Compliance
+- OLAP vs OLTP optimization
+- Graceful Rollbacks
+
+Hands-On – Capstone Project
+
+- High-scale e-commerce backend with:
+
+1. API Gateway & microservices
+2. PostgreSQL sharding + read replicas
+3. Redis caching layer
+4. Kafka-based async processing
+5. Prometheus + Grafana monitoring
+6. Kubernetes autoscaling
+7. Canary deployment strategy
+8. Disaster recovery & backup scripts
+
+Resources
+
+- [AWS Architecture Blog](https://aws.amazon.com/architecture/)
+- [Netflix Tech Blog](https://netflixtechblog.com/)
+- [Uber Engineering Blog](https://eng.uber.com/)
+
