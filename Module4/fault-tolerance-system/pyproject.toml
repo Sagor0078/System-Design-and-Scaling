@@ -1,5 +1,5 @@
 [project]
-name = "resilient-service"
+name = "fault-tolerance-system"
 version = "0.1.0"
 description = "Module 4 - reliability, observability and fault tolerance demo"
 readme = "README.md"

@@ -2,7 +2,7 @@
 
 **Date:** 2026-10-14
 **Status:** Approved design, pending implementation plan
-**Location:** `Module4/resilient-service/`
+**Location:** `Module4/fault-tolerance-system/`
 
 ## Intent
 
@@ -176,7 +176,7 @@ Telemetry failure never breaks request handling.
 
 ```
 Module4/
-└── resilient-service/
+└── fault-tolerance-system/
     ├── README.md                  (quick start, architecture, chaos runbook)
     ├── docker-compose.yml
     ├── pyproject.toml

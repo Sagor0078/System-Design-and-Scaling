@@ -45,7 +45,7 @@ Everything else is the observability plane.
 ### 1. Start the stack
 
 ```bash
-cd Module4/resilient-service
+cd Module4/fault-tolerance-system
 docker compose up -d --build
 ```
 
@@ -143,7 +143,7 @@ table, so "it worked" is a measurement rather than an impression.
 ## Project structure
 
 ```
-resilient-service/
+fault-tolerance-system/
 ├── docker-compose.yml              # seven services
 ├── Dockerfile                      # one image, both Python services
 ├── requirements.txt
@@ -251,8 +251,8 @@ share one axis, because a second y-axis is how dashboards start lying.
 
 ```bash
 # build the image into your local cluster (kind shown; minikube: minikube image load)
-docker build -t module4/resilient-service:local .
-kind load docker-image module4/resilient-service:local
+docker build -t module4/fault-tolerance-system:local .
+kind load docker-image module4/fault-tolerance-system:local
 
 kubectl apply -k k8s/
 kubectl -n module4 get pods,hpa

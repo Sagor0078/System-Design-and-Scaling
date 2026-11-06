@@ -455,7 +455,7 @@ Hands-On
 
 - [Mini Project](https://github.com/Sagor0078/System-Design-and-Scaling/tree/main/Module4):
 
-1. Deploy on Kubernetes (manifests in `Module4/resilient-service/k8s/`)
+1. Deploy on Kubernetes (manifests in `Module4/fault-tolerance-system/k8s/`)
 2. Add health checks, liveness/readiness probes
 3. Implement autoscaling based on CPU/memory
 4. Add Prometheus + Grafana dashboards

@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
         - name: inventory
-          image: module4/resilient-service:local
+          image: module4/fault-tolerance-system:local
           imagePullPolicy: IfNotPresent
           command: ["uvicorn", "inventory.main:app", "--host", "0.0.0.0", "--port", "8001"]
           ports:

@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Build `Module4/resilient-service` — a FastAPI service that survives a failing dependency and exposes why, through metrics, traces, logs, alerts, a verifying chaos harness, and a Kubernetes overlay.
+**Goal:** Build `Module4/fault-tolerance-system` — a FastAPI service that survives a failing dependency and exposes why, through metrics, traces, logs, alerts, a verifying chaos harness, and a Kubernetes overlay.
 
 **Architecture:** A pure-Python `resilience/` package (circuit breaker, retry with jittered backoff, stale-cache degradation) with injected clock/sleep/RNG so it is testable without containers. An `orders` FastAPI service composes those as timeout → retry → breaker → fallback around an httpx call to an `inventory` service that can be told to fail. Prometheus scrapes both, Alertmanager receives rules, OpenTelemetry ships spans to Jaeger via a collector, Grafana is provisioned with a dashboard.
 
@@ -35,34 +35,34 @@
 ### Task 1: Project scaffolding
 
 **Files:**
-- Create: `Module4/resilient-service/.python-version`
-- Create: `Module4/resilient-service/pyproject.toml`
-- Create: `Module4/resilient-service/requirements.txt`
-- Create: `Module4/resilient-service/Dockerfile`
-- Create: `Module4/resilient-service/.dockerignore`
-- Create: `Module4/resilient-service/resilience/__init__.py`
-- Create: `Module4/resilient-service/tests/__init__.py`
-- Create: `Module4/resilient-service/conftest.py`
+- Create: `Module4/fault-tolerance-system/.python-version`
+- Create: `Module4/fault-tolerance-system/pyproject.toml`
+- Create: `Module4/fault-tolerance-system/requirements.txt`
+- Create: `Module4/fault-tolerance-system/Dockerfile`
+- Create: `Module4/fault-tolerance-system/.dockerignore`
+- Create: `Module4/fault-tolerance-system/resilience/__init__.py`
+- Create: `Module4/fault-tolerance-system/tests/__init__.py`
+- Create: `Module4/fault-tolerance-system/conftest.py`
 
 **Interfaces:**
 - Consumes: nothing.
-- Produces: an installable project root; `pytest` runnable from `Module4/resilient-service/`.
+- Produces: an installable project root; `pytest` runnable from `Module4/fault-tolerance-system/`.
 
 - [ ] **Step 1: Create the directory tree and version pin**
 
 ```bash
-mkdir -p Module4/resilient-service/{resilience,orders,inventory,observability,chaos,tests}
-mkdir -p Module4/resilient-service/{prometheus,alertmanager,otel,k8s}
-mkdir -p Module4/resilient-service/grafana/provisioning/{datasources,dashboards}
-mkdir -p Module4/resilient-service/grafana/dashboards
-echo "3.12" > Module4/resilient-service/.python-version
+mkdir -p Module4/fault-tolerance-system/{resilience,orders,inventory,observability,chaos,tests}
+mkdir -p Module4/fault-tolerance-system/{prometheus,alertmanager,otel,k8s}
+mkdir -p Module4/fault-tolerance-system/grafana/provisioning/{datasources,dashboards}
+mkdir -p Module4/fault-tolerance-system/grafana/dashboards
+echo "3.12" > Module4/fault-tolerance-system/.python-version
 ```
 
 - [ ] **Step 2: Write `pyproject.toml`**
 
 ```toml
 [project]
-name = "resilient-service"
+name = "fault-tolerance-system"
 version = "0.1.0"
 description = "Module 4 - reliability, observability and fault tolerance demo"
 readme = "README.md"
@@ -124,13 +124,13 @@ def anyio_backend():
 
 - [ ] **Step 6: Create empty package markers and verify pytest collects nothing**
 
-Run: `cd Module4/resilient-service && python3 -m pytest -q`
+Run: `cd Module4/fault-tolerance-system && python3 -m pytest -q`
 Expected: `no tests ran` (exit code 5), not an import error.
 
 - [ ] **Step 7: Commit**
 
 ```bash
-git add Module4/resilient-service
+git add Module4/fault-tolerance-system
 git commit -m "feat(module4): scaffold resilient-service project"
 ```
 
@@ -139,8 +139,8 @@ git commit -m "feat(module4): scaffold resilient-service project"
 ### Task 2: Circuit breaker
 
 **Files:**
-- Create: `Module4/resilient-service/resilience/circuit_breaker.py`
-- Test: `Module4/resilient-service/tests/test_circuit_breaker.py`
+- Create: `Module4/fault-tolerance-system/resilience/circuit_breaker.py`
+- Test: `Module4/fault-tolerance-system/tests/test_circuit_breaker.py`
 
 **Interfaces:**
 - Consumes: nothing.
@@ -300,7 +300,7 @@ def test_state_change_callback_fires():
 
 - [ ] **Step 2: Run tests to verify they fail**
 
-Run: `cd Module4/resilient-service && python3 -m pytest tests/test_circuit_breaker.py -q`
+Run: `cd Module4/fault-tolerance-system && python3 -m pytest tests/test_circuit_breaker.py -q`
 Expected: collection error — `ModuleNotFoundError: No module named 'resilience.circuit_breaker'`.
 
 - [ ] **Step 3: Implement the breaker**
@@ -309,13 +309,13 @@ Use `threading.RLock` around every state read and mutation. Key points: `state` 
 
 - [ ] **Step 4: Run tests to verify they pass**
 
-Run: `cd Module4/resilient-service && python3 -m pytest tests/test_circuit_breaker.py -q`
+Run: `cd Module4/fault-tolerance-system && python3 -m pytest tests/test_circuit_breaker.py -q`
 Expected: 12 passed.
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add Module4/resilient-service/resilience/circuit_breaker.py Module4/resilient-service/tests/test_circuit_breaker.py
+git add Module4/fault-tolerance-system/resilience/circuit_breaker.py Module4/fault-tolerance-system/tests/test_circuit_breaker.py
 git commit -m "feat(module4): add circuit breaker with half-open probing"
 ```
 
@@ -324,8 +324,8 @@ git commit -m "feat(module4): add circuit breaker with half-open probing"
 ### Task 3: Retry with jittered backoff
 
 **Files:**
-- Create: `Module4/resilient-service/resilience/retry.py`
-- Test: `Module4/resilient-service/tests/test_retry.py`
+- Create: `Module4/fault-tolerance-system/resilience/retry.py`
+- Test: `Module4/fault-tolerance-system/tests/test_retry.py`
 
 **Interfaces:**
 - Consumes: nothing.
@@ -430,7 +430,7 @@ def test_max_attempts_one_means_no_retry():
 
 - [ ] **Step 2: Run tests to verify they fail**
 
-Run: `cd Module4/resilient-service && python3 -m pytest tests/test_retry.py -q`
+Run: `cd Module4/fault-tolerance-system && python3 -m pytest tests/test_retry.py -q`
 Expected: `ModuleNotFoundError: No module named 'resilience.retry'`.
 
 - [ ] **Step 3: Implement `RetryPolicy`**
@@ -439,13 +439,13 @@ Expected: `ModuleNotFoundError: No module named 'resilience.retry'`.
 
 - [ ] **Step 4: Run tests to verify they pass**
 
-Run: `cd Module4/resilient-service && python3 -m pytest tests/test_retry.py -q`
+Run: `cd Module4/fault-tolerance-system && python3 -m pytest tests/test_retry.py -q`
 Expected: 9 passed.
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add Module4/resilient-service/resilience/retry.py Module4/resilient-service/tests/test_retry.py
+git add Module4/fault-tolerance-system/resilience/retry.py Module4/fault-tolerance-system/tests/test_retry.py
 git commit -m "feat(module4): add retry policy with full-jitter backoff"
 ```
 
@@ -454,8 +454,8 @@ git commit -m "feat(module4): add retry policy with full-jitter backoff"
 ### Task 4: Graceful degradation cache
 
 **Files:**
-- Create: `Module4/resilient-service/resilience/degradation.py`
-- Test: `Module4/resilient-service/tests/test_degradation.py`
+- Create: `Module4/fault-tolerance-system/resilience/degradation.py`
+- Test: `Module4/fault-tolerance-system/tests/test_degradation.py`
 
 **Interfaces:**
 - Consumes: nothing.
@@ -540,7 +540,7 @@ def test_keys_are_independent():
 
 - [ ] **Step 2: Run tests to verify they fail**
 
-Run: `cd Module4/resilient-service && python3 -m pytest tests/test_degradation.py -q`
+Run: `cd Module4/fault-tolerance-system && python3 -m pytest tests/test_degradation.py -q`
 Expected: `ModuleNotFoundError: No module named 'resilience.degradation'`.
 
 - [ ] **Step 3: Implement `StaleCache`**
@@ -549,7 +549,7 @@ Dict of `key -> (value, stored_at)` under a `threading.Lock`. `get_fresh` return
 
 - [ ] **Step 4: Run tests to verify they pass**
 
-Run: `cd Module4/resilient-service && python3 -m pytest tests/test_degradation.py -q`
+Run: `cd Module4/fault-tolerance-system && python3 -m pytest tests/test_degradation.py -q`
 Expected: 8 passed.
 
 - [ ] **Step 5: Export the package surface in `resilience/__init__.py`**
@@ -565,11 +565,11 @@ __all__ = ["CircuitBreaker", "CircuitOpenError", "CircuitState", "Fallback",
 
 - [ ] **Step 6: Run the whole suite and commit**
 
-Run: `cd Module4/resilient-service && python3 -m pytest -q`
+Run: `cd Module4/fault-tolerance-system && python3 -m pytest -q`
 Expected: 29 passed.
 
 ```bash
-git add Module4/resilient-service/resilience Module4/resilient-service/tests
+git add Module4/fault-tolerance-system/resilience Module4/fault-tolerance-system/tests
 git commit -m "feat(module4): add stale-cache graceful degradation"
 ```
 
@@ -578,11 +578,11 @@ git commit -m "feat(module4): add stale-cache graceful degradation"
 ### Task 5: Observability plumbing
 
 **Files:**
-- Create: `Module4/resilient-service/observability/__init__.py`
-- Create: `Module4/resilient-service/observability/metrics.py`
-- Create: `Module4/resilient-service/observability/logging.py`
-- Create: `Module4/resilient-service/observability/otel.py`
-- Test: `Module4/resilient-service/tests/test_metrics.py`
+- Create: `Module4/fault-tolerance-system/observability/__init__.py`
+- Create: `Module4/fault-tolerance-system/observability/metrics.py`
+- Create: `Module4/fault-tolerance-system/observability/logging.py`
+- Create: `Module4/fault-tolerance-system/observability/otel.py`
+- Test: `Module4/fault-tolerance-system/tests/test_metrics.py`
 
 **Interfaces:**
 - Consumes: `CircuitState` from Task 2.
@@ -637,7 +637,7 @@ def test_render_returns_prometheus_text_and_content_type():
 
 - [ ] **Step 2: Run tests to verify they fail**
 
-Run: `cd Module4/resilient-service && python3 -m pytest tests/test_metrics.py -q`
+Run: `cd Module4/fault-tolerance-system && python3 -m pytest tests/test_metrics.py -q`
 Expected: `ModuleNotFoundError: No module named 'observability'`.
 
 - [ ] **Step 3: Implement the three observability modules**
@@ -650,13 +650,13 @@ Expected: `ModuleNotFoundError: No module named 'observability'`.
 
 - [ ] **Step 4: Run tests to verify they pass**
 
-Run: `cd Module4/resilient-service && python3 -m pytest tests/test_metrics.py -q`
+Run: `cd Module4/fault-tolerance-system && python3 -m pytest tests/test_metrics.py -q`
 Expected: 4 passed.
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add Module4/resilient-service/observability Module4/resilient-service/tests/test_metrics.py
+git add Module4/fault-tolerance-system/observability Module4/fault-tolerance-system/tests/test_metrics.py
 git commit -m "feat(module4): add metrics, JSON logging and OTel tracing setup"
 ```
 
@@ -665,9 +665,9 @@ git commit -m "feat(module4): add metrics, JSON logging and OTel tracing setup"
 ### Task 6: Inventory service with chaos controls
 
 **Files:**
-- Create: `Module4/resilient-service/inventory/__init__.py`
-- Create: `Module4/resilient-service/inventory/main.py`
-- Test: `Module4/resilient-service/tests/test_inventory_chaos.py`
+- Create: `Module4/fault-tolerance-system/inventory/__init__.py`
+- Create: `Module4/fault-tolerance-system/inventory/main.py`
+- Test: `Module4/fault-tolerance-system/tests/test_inventory_chaos.py`
 
 **Interfaces:**
 - Consumes: `observability.metrics`, `observability.logging`, `observability.otel`.
@@ -709,7 +709,7 @@ def test_reset_clears_injected_faults():
 
 - [ ] **Step 2: Run tests to verify they fail**
 
-Run: `cd Module4/resilient-service && python3 -m pytest tests/test_inventory_chaos.py -q`
+Run: `cd Module4/fault-tolerance-system && python3 -m pytest tests/test_inventory_chaos.py -q`
 Expected: `ModuleNotFoundError: No module named 'inventory.main'`.
 
 - [ ] **Step 3: Implement the inventory service**
@@ -718,13 +718,13 @@ Expected: `ModuleNotFoundError: No module named 'inventory.main'`.
 
 - [ ] **Step 4: Run tests to verify they pass**
 
-Run: `cd Module4/resilient-service && python3 -m pytest tests/test_inventory_chaos.py -q`
+Run: `cd Module4/fault-tolerance-system && python3 -m pytest tests/test_inventory_chaos.py -q`
 Expected: 5 passed.
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add Module4/resilient-service/inventory Module4/resilient-service/tests/test_inventory_chaos.py
+git add Module4/fault-tolerance-system/inventory Module4/fault-tolerance-system/tests/test_inventory_chaos.py
 git commit -m "feat(module4): add inventory dependency with fault injection"
 ```
 
@@ -733,12 +733,12 @@ git commit -m "feat(module4): add inventory dependency with fault injection"
 ### Task 7: Orders service composing the resilience stack
 
 **Files:**
-- Create: `Module4/resilient-service/orders/__init__.py`
-- Create: `Module4/resilient-service/orders/config.py`
-- Create: `Module4/resilient-service/orders/clients.py`
-- Create: `Module4/resilient-service/orders/main.py`
-- Test: `Module4/resilient-service/tests/test_orders_client.py`
-- Test: `Module4/resilient-service/tests/test_orders_api.py`
+- Create: `Module4/fault-tolerance-system/orders/__init__.py`
+- Create: `Module4/fault-tolerance-system/orders/config.py`
+- Create: `Module4/fault-tolerance-system/orders/clients.py`
+- Create: `Module4/fault-tolerance-system/orders/main.py`
+- Test: `Module4/fault-tolerance-system/tests/test_orders_client.py`
+- Test: `Module4/fault-tolerance-system/tests/test_orders_api.py`
 
 **Interfaces:**
 - Consumes: everything from Tasks 2–5.
@@ -838,7 +838,7 @@ def test_metrics_endpoint_exposes_breaker_gauge():
 
 - [ ] **Step 2: Run tests to verify they fail**
 
-Run: `cd Module4/resilient-service && python3 -m pytest tests/test_orders_client.py tests/test_orders_api.py -q`
+Run: `cd Module4/fault-tolerance-system && python3 -m pytest tests/test_orders_client.py tests/test_orders_api.py -q`
 Expected: `ModuleNotFoundError: No module named 'orders.clients'`.
 
 - [ ] **Step 3: Implement config, client and app**
@@ -847,13 +847,13 @@ Expected: `ModuleNotFoundError: No module named 'orders.clients'`.
 
 - [ ] **Step 4: Run tests to verify they pass**
 
-Run: `cd Module4/resilient-service && python3 -m pytest -q`
+Run: `cd Module4/fault-tolerance-system && python3 -m pytest -q`
 Expected: all tests pass.
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add Module4/resilient-service/orders Module4/resilient-service/tests
+git add Module4/fault-tolerance-system/orders Module4/fault-tolerance-system/tests
 git commit -m "feat(module4): add orders service with resilient inventory client"
 ```
 
@@ -862,14 +862,14 @@ git commit -m "feat(module4): add orders service with resilient inventory client
 ### Task 8: Compose stack and observability configuration
 
 **Files:**
-- Create: `Module4/resilient-service/docker-compose.yml`
-- Create: `Module4/resilient-service/prometheus/prometheus.yml`
-- Create: `Module4/resilient-service/prometheus/alert_rules.yml`
-- Create: `Module4/resilient-service/alertmanager/alertmanager.yml`
-- Create: `Module4/resilient-service/otel/collector-config.yaml`
-- Create: `Module4/resilient-service/grafana/provisioning/datasources/prometheus.yml`
-- Create: `Module4/resilient-service/grafana/provisioning/dashboards/dashboards.yml`
-- Create: `Module4/resilient-service/grafana/dashboards/orders.json`
+- Create: `Module4/fault-tolerance-system/docker-compose.yml`
+- Create: `Module4/fault-tolerance-system/prometheus/prometheus.yml`
+- Create: `Module4/fault-tolerance-system/prometheus/alert_rules.yml`
+- Create: `Module4/fault-tolerance-system/alertmanager/alertmanager.yml`
+- Create: `Module4/fault-tolerance-system/otel/collector-config.yaml`
+- Create: `Module4/fault-tolerance-system/grafana/provisioning/datasources/prometheus.yml`
+- Create: `Module4/fault-tolerance-system/grafana/provisioning/dashboards/dashboards.yml`
+- Create: `Module4/fault-tolerance-system/grafana/dashboards/orders.json`
 
 **Interfaces:**
 - Consumes: the two service images from Tasks 6 and 7.
@@ -931,7 +931,7 @@ Six panels: request rate by status, error rate percentage, latency p50/p95/p99 f
 
 Run:
 ```bash
-cd Module4/resilient-service && python3 - <<'EOF'
+cd Module4/fault-tolerance-system && python3 - <<'EOF'
 import json, sys
 try:
     import yaml
@@ -952,7 +952,7 @@ Expected: `configs parse`. If `docker compose` is installed, also run `docker co
 - [ ] **Step 6: Commit**
 
 ```bash
-git add Module4/resilient-service
+git add Module4/fault-tolerance-system
 git commit -m "feat(module4): add compose stack, Prometheus rules, Grafana dashboard"
 ```
 
@@ -961,9 +961,9 @@ git commit -m "feat(module4): add compose stack, Prometheus rules, Grafana dashb
 ### Task 9: Chaos harness
 
 **Files:**
-- Create: `Module4/resilient-service/chaos/__init__.py`
-- Create: `Module4/resilient-service/chaos/run_chaos.py`
-- Test: `Module4/resilient-service/tests/test_chaos_harness.py`
+- Create: `Module4/fault-tolerance-system/chaos/__init__.py`
+- Create: `Module4/fault-tolerance-system/chaos/run_chaos.py`
+- Test: `Module4/fault-tolerance-system/tests/test_chaos_harness.py`
 
 **Interfaces:**
 - Consumes: the running Compose stack at runtime; nothing at import time.
@@ -1015,7 +1015,7 @@ def test_verdict_fails_when_any_assertion_breaks():
 
 - [ ] **Step 2: Run tests to verify they fail**
 
-Run: `cd Module4/resilient-service && python3 -m pytest tests/test_chaos_harness.py -q`
+Run: `cd Module4/fault-tolerance-system && python3 -m pytest tests/test_chaos_harness.py -q`
 Expected: `ModuleNotFoundError: No module named 'chaos.run_chaos'`.
 
 - [ ] **Step 3: Implement the harness**
@@ -1024,13 +1024,13 @@ Expected: `ModuleNotFoundError: No module named 'chaos.run_chaos'`.
 
 - [ ] **Step 4: Run tests to verify they pass**
 
-Run: `cd Module4/resilient-service && python3 -m pytest tests/test_chaos_harness.py -q`
+Run: `cd Module4/fault-tolerance-system && python3 -m pytest tests/test_chaos_harness.py -q`
 Expected: 6 passed.
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add Module4/resilient-service/chaos Module4/resilient-service/tests/test_chaos_harness.py
+git add Module4/fault-tolerance-system/chaos Module4/fault-tolerance-system/tests/test_chaos_harness.py
 git commit -m "feat(module4): add verifying chaos experiment harness"
 ```
 
@@ -1039,15 +1039,15 @@ git commit -m "feat(module4): add verifying chaos experiment harness"
 ### Task 10: Kubernetes overlay
 
 **Files:**
-- Create: `Module4/resilient-service/k8s/namespace.yaml`
-- Create: `Module4/resilient-service/k8s/configmap.yaml`
-- Create: `Module4/resilient-service/k8s/inventory.yaml`
-- Create: `Module4/resilient-service/k8s/orders.yaml`
-- Create: `Module4/resilient-service/k8s/hpa.yaml`
-- Create: `Module4/resilient-service/k8s/kustomization.yaml`
+- Create: `Module4/fault-tolerance-system/k8s/namespace.yaml`
+- Create: `Module4/fault-tolerance-system/k8s/configmap.yaml`
+- Create: `Module4/fault-tolerance-system/k8s/inventory.yaml`
+- Create: `Module4/fault-tolerance-system/k8s/orders.yaml`
+- Create: `Module4/fault-tolerance-system/k8s/hpa.yaml`
+- Create: `Module4/fault-tolerance-system/k8s/kustomization.yaml`
 
 **Interfaces:**
-- Consumes: the image built in Task 1, tagged `module4/resilient-service:local`.
+- Consumes: the image built in Task 1, tagged `module4/fault-tolerance-system:local`.
 - Produces: namespace `module4`, Deployments `orders` and `inventory`, Services of the same names, and an HPA targeting `orders`.
 
 - [ ] **Step 1: Write the manifests**
@@ -1062,7 +1062,7 @@ git commit -m "feat(module4): add verifying chaos experiment harness"
 
 Run:
 ```bash
-cd Module4/resilient-service && python3 - <<'EOF'
+cd Module4/fault-tolerance-system && python3 - <<'EOF'
 import glob, yaml
 for f in sorted(glob.glob("k8s/*.yaml")):
     list(yaml.safe_load_all(open(f)))
@@ -1079,7 +1079,7 @@ Expected: the success line. If `kubectl` is available, also `kubectl apply --dry
 - [ ] **Step 4: Commit**
 
 ```bash
-git add Module4/resilient-service/k8s
+git add Module4/fault-tolerance-system/k8s
 git commit -m "feat(module4): add Kubernetes overlay with probes and HPA"
 ```
 
@@ -1088,7 +1088,7 @@ git commit -m "feat(module4): add Kubernetes overlay with probes and HPA"
 ### Task 11: README and final verification
 
 **Files:**
-- Create: `Module4/resilient-service/README.md`
+- Create: `Module4/fault-tolerance-system/README.md`
 
 **Interfaces:**
 - Consumes: everything.
@@ -1100,17 +1100,17 @@ Sections: title, one-paragraph summary, ASCII architecture diagram (copied from 
 
 - [ ] **Step 2: Run the full suite**
 
-Run: `cd Module4/resilient-service && python3 -m pytest -q`
+Run: `cd Module4/fault-tolerance-system && python3 -m pytest -q`
 Expected: every test passes.
 
 - [ ] **Step 3: Byte-compile everything**
 
-Run: `cd Module4/resilient-service && python3 -m compileall -q resilience orders inventory observability chaos`
+Run: `cd Module4/fault-tolerance-system && python3 -m compileall -q resilience orders inventory observability chaos`
 Expected: no output.
 
 - [ ] **Step 4: Commit**
 
 ```bash
-git add Module4/resilient-service/README.md
+git add Module4/fault-tolerance-system/README.md
 git commit -m "docs(module4): add resilient-service README and runbook"
 ```
