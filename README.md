@@ -24,7 +24,7 @@ This roadmap takes you from core fundamentals to advanced distributed systems, b
 | **Eventual Consistency**      | Data converges over time                                                    | DynamoDB, Cassandra, ScyllaDB                    | [Amazon DynamoDB Eventual Consistency](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/HowItWorks.ReadConsistency.html) |
 | **Distributed Transactions**  | Transactions across multiple systems                                        | Two-phase commit, Saga pattern         | [Distributed Transactions Patterns](https://microservices.io/patterns/data/saga.html)                                                    |
 | **Monolith vs Microservices** | Trade-offs of single app vs many services                                   | Maintainability, complexity            | [Martin Fowler – MonolithFirst](https://martinfowler.com/bliki/MonolithFirst.html)                                                       |
-| **Leader Election**           | Choosing a node as leader in a cluster                                      | Raft, Paxos, Zookeeper                 | [Raft Visualization](https://raft.github.io/)  
+| **Leader Election**           | Choosing a node as leader in a cluster                                      | Raft, Paxos, Zookeeper                 | [Raft Visualization](https://raft.github.io/) |
 
 
 
@@ -394,6 +394,108 @@ work without long-lived credentials in a Secret. Get this right first.
 - [Google SRE Workbook](https://sre.google/workbook/table-of-contents/) — SLOs, alerting on burn rate, and on-call that works
 - [CNCF Landscape](https://landscape.cncf.io/) — when you need to know what else exists in a category
 - [CNCF Reports](https://www.cncf.io/reports/) — adoption data, useful for justifying a tool choice
+
+## Machine Learning System Design & Tools
+
+ML systems fail differently from the services above: the code can be correct
+while the model is quietly wrong. The failure modes are training/serving skew,
+data distribution shift, feedback loops, and silent degradation — none of which
+a 200 response tells you about. This section is operational: designing, serving
+and monitoring ML in production, on the same Kubernetes substrate as everything
+else in this repo. All links verified 2026-11-06.
+
+### Foundations — ML system design
+
+| Topic | Why it matters in production | Resource |
+| ----- | ---------------------------- | -------- |
+| **The canonical design text** | Free online book covering the whole lifecycle as a systems problem, not a modelling one | [ML Systems Design – Chip Huyen](https://huyenchip.com/machine-learning-systems-design/toc.html) |
+| **Why ML systems rot** | The paper that named the problem: hidden coupling, entanglement, pipeline jungles, undeclared consumers | [Hidden Technical Debt in ML Systems](https://papers.nips.cc/paper/2015/file/86df7dcfd896fcaf2674f757a2463eba-Paper.pdf) (NeurIPS 2015) |
+| **Engineering discipline** | 43 rules from Google on what to build first and what to never do; read before your first model ships | [Rules of Machine Learning](https://developers.google.com/machine-learning/guides/rules-of-ml) |
+| **MLOps maturity** | A concrete ladder from manual notebooks to automated retraining, with the architecture at each level | [MLOps: Continuous Delivery for ML](https://docs.cloud.google.com/architecture/mlops-continuous-delivery-and-automation-pipelines-in-machine-learning) · [ml-ops.org](https://ml-ops.org/) |
+| **CI/CD for models** | How delivery pipelines change when an artefact is data-dependent | [Continuous Delivery for ML – Fowler](https://martinfowler.com/articles/cd4ml.html) |
+| **Testing ML** | Models pass unit tests and still fail; this is what to test instead | [Testing & Debugging ML](https://developers.google.com/machine-learning/testing-debugging) · [ML Test Score](https://research.google/pubs/pub46555/) |
+| **Real-time ML** | The architectural jump from batch scoring to online features and streaming inference | [Real-time ML – Chip Huyen](https://huyenchip.com/2020/12/27/real-time-machine-learning.html) |
+| **Courses** | Two production-focused courses, both free | [Stanford CS329S – ML Systems Design](https://stanford-cs329s.github.io/) · [Full Stack Deep Learning](https://fullstackdeeplearning.com/course/2022/) |
+| **Applied case studies** | What companies actually built, by problem type — the fastest way to calibrate a design | [applied-ml](https://github.com/eugeneyan/applied-ml) · [ApplyingML](https://applyingml.com/) · [Eugene Yan's writing](https://eugeneyan.com/writing/) |
+| **Hands-on curriculum** | End-to-end project structure, from data to deployment | [Made With ML](https://madewithml.com/) |
+
+### Data & feature pipelines
+
+| Topic | Why it matters in production | Resource |
+| ----- | ---------------------------- | -------- |
+| **Feature stores** | The standard fix for training/serving skew: compute a feature once, serve it to both paths | [Feast](https://docs.feast.dev/) · [What is a feature store?](https://www.tecton.ai/blog/what-is-a-feature-store/) |
+| **Data validation** | Schema and distribution checks at pipeline boundaries catch the bugs models hide | [Great Expectations](https://docs.greatexpectations.io/docs/) · [TFX Guide](https://www.tensorflow.org/tfx/guide) |
+| **Data & model versioning** | Reproducibility needs the dataset pinned, not just the code | [DVC](https://dvc.org/doc) |
+| **Orchestration** | Retraining is a scheduled, retryable, observable DAG — the same discipline as Module 3 | [Airflow](https://airflow.apache.org/docs/) · [Dagster](https://docs.dagster.io/) · [Metaflow](https://docs.metaflow.org/) |
+| **Kubernetes-native pipelines** | Runs on the cluster you already have, and integrates with Argo CD | [Kubeflow](https://www.kubeflow.org/docs/) · [Kubeflow Pipelines](https://www.kubeflow.org/docs/components/pipelines/) |
+| **Distributed compute** | Scale training, tuning and batch inference past one machine without rewriting | [Ray](https://docs.ray.io/en/latest/) |
+
+### Experiment tracking & model registry
+
+| Topic | Why it matters in production | Resource |
+| ----- | ---------------------------- | -------- |
+| **Tracking** | Without it you cannot answer "which run produced the model in prod?" | [MLflow](https://mlflow.org/docs/latest/index.html) · [Weights & Biases](https://docs.wandb.ai/) |
+| **Model registry** | Staged promotion and, crucially, a rollback path for models | [MLflow Model Registry](https://mlflow.org/docs/latest/model-registry.html) |
+| **Pipeline frameworks** | Opinionated glue when you want the stack assembled for you | [ZenML](https://docs.zenml.io/) |
+
+### Model serving & inference on Kubernetes
+
+| Topic | Why it matters in production | Resource |
+| ----- | ---------------------------- | -------- |
+| **Inference on k8s** | CRD-driven serving with canaries, autoscaling and scale-to-zero built in | [KServe](https://kserve.github.io/website/) · [Seldon Core](https://github.com/SeldonIO/seldon-core) |
+| **High-performance server** | Multi-framework, dynamic batching, model ensembles, GPU sharing | [NVIDIA Triton](https://docs.nvidia.com/deeplearning/triton-inference-server/user-guide/docs/index.html) |
+| **Packaging** | Turns a model into a versioned, containerised service with a sane API | [BentoML](https://docs.bentoml.com/en/latest/) · [TorchServe](https://pytorch.org/serve/) · [TF Serving](https://www.tensorflow.org/tfx/guide/serving) |
+| **Python-native serving** | Model composition and fan-out pipelines in code rather than YAML | [Ray Serve](https://docs.ray.io/en/latest/serve/index.html) |
+| **Scale to zero** | GPU-backed replicas are expensive to idle; event-driven scaling pays for itself | [KEDA](https://keda.sh/docs/) · [Knative Serving](https://knative.dev/docs/serving/) |
+| **Portable runtime** | One optimised runtime across CPU and GPU, decoupled from the training framework | [ONNX Runtime](https://onnxruntime.ai/docs/) |
+
+### GPU & inference performance
+
+| Topic | Why it matters in production | Resource |
+| ----- | ---------------------------- | -------- |
+| **GPUs in the cluster** | Device plugin, drivers, MIG partitioning and time-slicing, managed as one operator | [NVIDIA GPU Operator](https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/latest/index.html) · [k8s Device Plugin](https://github.com/NVIDIA/k8s-device-plugin) |
+| **Compilation & kernels** | Where the easy 2–5× latency wins live, before you buy more GPUs | [TensorRT](https://docs.nvidia.com/deeplearning/tensorrt/) · [torch.compile](https://huggingface.co/docs/transformers/perf_torch_compile) |
+| **Mixed precision** | Half the memory and faster math for near-identical accuracy | [PyTorch AMP](https://pytorch.org/docs/stable/notes/amp_examples.html) |
+| **Input pipeline** | On GPU inference the preprocessing, not the model, is often the bottleneck | [NVIDIA DALI](https://docs.nvidia.com/deeplearning/dali/user-guide/docs/index.html) |
+
+### LLM / GenAI systems
+
+| Topic | Why it matters in production | Resource |
+| ----- | ---------------------------- | -------- |
+| **Serving throughput** | PagedAttention and continuous batching are the difference between 1× and 10× throughput | [vLLM](https://docs.vllm.ai/en/latest/) · [PagedAttention paper](https://arxiv.org/abs/2309.06180) |
+| **Alternative servers** | Comparable engines worth benchmarking against your own traffic shape | [TGI](https://huggingface.co/docs/text-generation-inference/index) · [SGLang](https://docs.sglang.ai/) · [llama.cpp](https://github.com/ggml-org/llama.cpp) · [Ollama](https://github.com/ollama/ollama) |
+| **RAG architecture** | The survey that maps the design space before you commit to one pipeline | [RAG Survey](https://arxiv.org/abs/2312.10997) · [Contextual Retrieval](https://www.anthropic.com/news/contextual-retrieval) |
+| **Agent patterns** | When to use a workflow and when an agent, with the failure modes of each | [Building Effective Agents](https://www.anthropic.com/engineering/building-effective-agents) |
+| **Prompting as engineering** | Versioned, tested prompts instead of strings edited in production | [Prompt Engineering Guide](https://docs.claude.com/en/docs/build-with-claude/prompt-engineering/overview) |
+| **Evals** | The only substitute for "it looked fine in the demo"; build these before scaling | [Hamel's Evals Guide](https://hamel.dev/blog/posts/evals/) · [Eugene Yan on evals](https://eugeneyan.com/writing/evals/) · [Ragas](https://docs.ragas.io/en/stable/) · [DeepEval](https://github.com/confident-ai/deepeval) |
+| **Observability** | Traces, token costs and latency per call — the Module 4 lesson applied to LLMs | [Langfuse](https://langfuse.com/docs) |
+| **Guardrails & security** | Prompt injection is an architectural problem, not a prompt problem | [OWASP LLM Top 10](https://genai.owasp.org/llm-top-10/) · [NeMo Guardrails](https://github.com/NVIDIA/NeMo-Guardrails) |
+| **Orchestration** | Useful when you need retrieval, tools and state glued together quickly | [LangChain](https://python.langchain.com/docs/introduction/) · [LlamaIndex](https://docs.llamaindex.ai/en/stable/) |
+| **The cost view** | What actually drives spend and latency in an LLM product | [LLM Engineering – Chip Huyen](https://huyenchip.com/2023/04/11/llm-engineering.html) |
+
+### Embeddings & vector search
+
+Directly relevant to face verification, de-duplication, semantic search and
+recommendations — any system where "find the nearest thing" is the query.
+
+| Topic | Why it matters in production | Resource |
+| ----- | ---------------------------- | -------- |
+| **ANN index internals** | HNSW is the default for a reason; knowing its graph structure is how you tune it | [HNSW paper](https://arxiv.org/abs/1603.09320) · [FAISS wiki](https://github.com/facebookresearch/faiss/wiki) |
+| **Quantization** | Product quantization trades a little recall for a lot of memory — usually the right trade | [Product Quantization](https://www.pinecone.io/learn/series/faiss/product-quantization/) · [Pinecone Learn](https://www.pinecone.io/learn/) |
+| **Recall vs latency** | ANN is approximate: measure recall@k against exact search, or you are guessing | [ANN Benchmarks](https://ann-benchmarks.com/) · [ann-benchmarks repo](https://github.com/erikbern/ann-benchmarks) |
+| **Vector stores** | Start with pgvector if Postgres is already in your stack; reach for a dedicated store when it stops scaling | [pgvector](https://github.com/pgvector/pgvector) · [Qdrant](https://qdrant.tech/documentation/) · [Weaviate](https://weaviate.io/developers/weaviate) · [Chroma](https://docs.trychroma.com/) · [Milvus](https://github.com/milvus-io/milvus) |
+| **Search-engine kNN** | Vector search inside the engine you may already run, alongside keyword search | [Elasticsearch kNN](https://www.elastic.co/guide/en/elasticsearch/reference/current/knn-search.html) · [OpenSearch kNN](https://opensearch.org/docs/latest/search-plugins/knn/index/) · [Redis Vectors](https://redis.io/docs/latest/develop/interact/search-and-query/advanced-concepts/vectors/) |
+| **Embedding models** | Picking and serving the encoder; the leaderboard is a starting point, your data is the judge | [Sentence Transformers](https://sbert.net/) · [MTEB Leaderboard](https://huggingface.co/spaces/mteb/leaderboard) |
+| **Face recognition specifics** | Margin-based losses and the alignment/threshold pipeline behind face verification | [ArcFace paper](https://arxiv.org/abs/1801.07698) · [InsightFace](https://github.com/deepinsight/insightface) |
+
+### Monitoring ML in production
+
+| Topic | Why it matters in production | Resource |
+| ----- | ---------------------------- | -------- |
+| **Distribution shift** | The most common silent failure: inputs drift, metrics stay green, accuracy falls | [Data Distribution Shifts & Monitoring](https://huyenchip.com/2022/02/07/data-distribution-shifts-and-monitoring.html) |
+| **Drift & quality monitoring** | Dashboards and tests for drift, data quality and performance over time | [Evidently](https://docs.evidentlyai.com/) |
+| **Operational metrics** | Prediction latency, throughput and error rates still matter — reuse the Module 4 stack | [Prometheus](https://prometheus.io/docs/introduction/overview/) · [Grafana](https://grafana.com/docs/grafana/latest/) |
+| **Progressive rollout** | Shadow, canary and automated rollback for models, same as for services | [Argo Rollouts](https://argo-rollouts.readthedocs.io/en/stable/) · [Flagger](https://flagger.app/) |
 
 ## Recommended resources
 
