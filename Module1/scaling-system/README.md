@@ -209,8 +209,8 @@ curl http://localhost:8080/api/users/1 \
 **Highly Recommended:**
 - [NGINX for Backend Developers](https://www.freecodecamp.org/news/nginx/)
 - [FastAPI Documentation](https://fastapi.tiangolo.com/)
-- [Redis Documentation](https://redis.io/documentation)
-- [Docker Best Practices](https://docs.docker.com/develop/best-practices/)
+- [Redis Documentation](https://redis.io/docs/latest/)
+- [Docker Best Practices](https://docs.docker.com/build/building/best-practices/)
 - [System Design Primer](https://github.com/donnemartin/system-design-primer)
 
 #### Contributing
