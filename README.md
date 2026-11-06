@@ -278,6 +278,123 @@ Resources
 - [Uber Engineering Blog](https://eng.uber.com/)
 
 
+## Platform & Infrastructure — Production Operations
+
+The stack this repository's infrastructure actually runs on: managed Kubernetes,
+Helm + Kustomize, Terraform/OpenTofu, Vault for secrets, Argo CD for GitOps, and
+a service mesh. Everything below is operational guidance — how to run these in
+production — rather than getting-started material. All links verified 2026-11-06.
+
+### Kubernetes — running it, not just using it
+
+| Topic | Why it matters in production | Resource |
+| ----- | ---------------------------- | -------- |
+| **Production checklist** | The single best audit of what a real cluster needs before traffic hits it | [learnk8s Production Best Practices](https://learnk8s.io/production-best-practices) |
+| **Requests & limits** | Wrong requests break the HPA and the scheduler silently; limits cause OOMKills and CPU throttling | [Managing Resources for Containers](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/) |
+| **Probes** | Liveness that checks dependencies turns a dependency outage into a cluster-wide restart loop (see `Module4/`) | [Liveness, Readiness & Startup Probes](https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/) |
+| **Disruption budgets** | Without a PDB, a node drain can take every replica at once | [Disruptions & PDBs](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/) |
+| **Priority & preemption** | Decides who dies when a node fills up — set it before you need it | [Pod Priority & Preemption](https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption/) |
+| **Graceful node shutdown** | Nodes that disappear without draining drop in-flight requests | [Node Shutdown](https://kubernetes.io/docs/concepts/cluster-administration/node-shutdown/) |
+| **RBAC** | Least privilege for humans and service accounts; the default is more open than you think | [RBAC Authorization](https://kubernetes.io/docs/reference/access-authn-authz/rbac/) |
+| **Pod Security Standards** | Replaced PodSecurityPolicy; baseline/restricted profiles per namespace | [Pod Security Standards](https://kubernetes.io/docs/concepts/security/pod-security-standards/) |
+| **Policy as code** | Enforce "no `:latest`", required labels, resource limits at admission time | [Kyverno](https://kyverno.io/docs/) · [OPA Gatekeeper](https://open-policy-agent.github.io/gatekeeper/website/docs/) |
+| **CIS benchmarking** | Scores your cluster against the CIS Kubernetes Benchmark | [kube-bench](https://github.com/aquasecurity/kube-bench) |
+| **etcd backup & restore** | etcd *is* your cluster; practise the restore before you need it | [Operating etcd](https://kubernetes.io/docs/tasks/administer-cluster/configure-upgrade-etcd/) |
+| **Cluster & volume backup** | Namespace-level backup/restore and migration | [Velero](https://velero.io/docs/) |
+| **Autoscaling** | HPA for pods, Cluster Autoscaler or Karpenter for nodes | [HPA](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/) · [Autoscaler](https://github.com/kubernetes/autoscaler) · [Karpenter](https://karpenter.sh/) |
+| **Metrics & debugging** | Which cluster metrics exist, and how to debug a cluster rather than a pod | [System Metrics](https://kubernetes.io/docs/concepts/cluster-administration/system-metrics/) · [Debug Clusters](https://kubernetes.io/docs/tasks/debug/debug-cluster/) |
+| **Monitoring stack** | The standard operator-based Prometheus/Grafana install | [kube-prometheus](https://github.com/prometheus-operator/kube-prometheus) · [Prometheus Operator](https://prometheus-operator.dev/docs/getting-started/introduction/) |
+| **Ingress, successor to** | Gateway API is where ingress is heading; worth planning for | [Gateway API](https://gateway-api.sigs.k8s.io/) |
+| **TLS automation** | Certificate issuance and renewal in-cluster | [cert-manager](https://cert-manager.io/docs/) |
+| **Learn the internals** | Build a cluster by hand once and nothing is a black box afterwards | [Kubernetes the Hard Way](https://github.com/kelseyhightower/kubernetes-the-hard-way) |
+| **Learn from outages** | A catalogue of real Kubernetes failure post-mortems | [k8s.af](https://k8s.af/) |
+| **Reference** | The docs worth reading cover to cover, plus the cheat sheet | [Concepts](https://kubernetes.io/docs/concepts/) · [kubectl Quick Reference](https://kubernetes.io/docs/reference/kubectl/quick-reference/) |
+
+### Managed Kubernetes — the identity bridge
+
+Workload identity is the piece that makes Vault, external-secrets and cloud APIs
+work without long-lived credentials in a Secret. Get this right first.
+
+| Platform | Resource |
+| -------- | -------- |
+| **EKS** | [EKS Best Practices Guides](https://aws.github.io/aws-eks-best-practices/) · [IAM Roles for Service Accounts](https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html) · [EKS Pod Identity](https://docs.aws.amazon.com/eks/latest/userguide/pod-identities.html) (the newer, simpler mechanism) |
+| **GKE** | [Workload Identity Federation](https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity) · [Hardening your cluster](https://cloud.google.com/kubernetes-engine/docs/how-to/hardening-your-cluster) |
+| **AKS** | [Workload Identity](https://learn.microsoft.com/en-us/azure/aks/workload-identity-overview) · [AKS Baseline Architecture](https://learn.microsoft.com/en-us/azure/architecture/reference-architectures/containers/aks/baseline-aks) |
+
+### HashiCorp Vault
+
+| Topic | Why it matters in production | Resource |
+| ----- | ---------------------------- | -------- |
+| **Production hardening** | The checklist: audit devices, TLS, no root tokens in CI, policy scoping | [Production Hardening](https://developer.hashicorp.com/vault/tutorials/operations/production-hardening) |
+| **Kubernetes auth** | Pods authenticate with their ServiceAccount token — no bootstrap secret to leak | [Kubernetes Auth Method](https://developer.hashicorp.com/vault/docs/auth/kubernetes) |
+| **Getting secrets into pods** | Three approaches with real trade-offs: sidecar injection, a CRD-driven operator, or CSI volumes | [Agent Injector](https://developer.hashicorp.com/vault/docs/platform/k8s/injector) · [Vault Secrets Operator](https://developer.hashicorp.com/vault/docs/platform/k8s/vso) · [CSI Provider](https://developer.hashicorp.com/vault/docs/platform/k8s/csi) |
+| **Dynamic database credentials** | Per-pod, short-lived DB users instead of one shared password — the biggest single win Vault offers | [Database Secrets Engine](https://developer.hashicorp.com/vault/docs/secrets/databases) |
+| **Encryption as a service** | Encrypt application data without the app ever holding a key | [Transit Secrets Engine](https://developer.hashicorp.com/vault/docs/secrets/transit) |
+| **HA & storage** | Raft integrated storage, quorum, and what a lost node actually costs | [Integrated Storage](https://developer.hashicorp.com/vault/docs/concepts/integrated-storage) |
+| **Seal & auto-unseal** | A restarted Vault is a sealed Vault; plan unsealing before your first 3am restart | [Seal/Unseal Concepts](https://developer.hashicorp.com/vault/docs/concepts/seal) |
+| **Deployment** | The official chart, and the values that matter for HA | [vault-helm](https://github.com/hashicorp/vault-helm) |
+| **Multi-backend alternative** | Sync secrets from Vault *or* cloud secret managers into Kubernetes Secrets | [External Secrets Operator](https://external-secrets.io/latest/) |
+| **Reference** | The full docs, worth skimming the concepts section end to end | [Vault Documentation](https://developer.hashicorp.com/vault/docs) |
+
+### Argo CD & GitOps
+
+| Topic | Why it matters in production | Resource |
+| ----- | ---------------------------- | -------- |
+| **GitOps principles** | The four principles worth agreeing on as a team before arguing about tools | [OpenGitOps](https://opengitops.dev/) |
+| **Best practices** | Separate config repo from source, pin versions, avoid the manifest-drift traps | [Argo CD Best Practices](https://argo-cd.readthedocs.io/en/stable/user-guide/best_practices/) |
+| **App of apps** | Bootstrapping a whole cluster from one root Application | [Cluster Bootstrapping](https://argo-cd.readthedocs.io/en/stable/operator-manual/cluster-bootstrapping/) |
+| **ApplicationSets** | One template across many clusters/environments instead of copy-pasted Applications | [ApplicationSet](https://argo-cd.readthedocs.io/en/stable/operator-manual/applicationset/) |
+| **Sync waves & hooks** | Ordering: CRDs before the controllers that use them, migrations before rollout | [Sync Phases & Waves](https://argo-cd.readthedocs.io/en/stable/user-guide/sync-waves/) |
+| **Secrets in GitOps** | The hard part of GitOps; options and their trade-offs | [Secret Management](https://argo-cd.readthedocs.io/en/stable/operator-manual/secret-management/) · [Sealed Secrets](https://github.com/bitnami-labs/sealed-secrets) |
+| **HA & disaster recovery** | Argo CD is itself a production service; back up its state | [High Availability](https://argo-cd.readthedocs.io/en/stable/operator-manual/high_availability/) · [Disaster Recovery](https://argo-cd.readthedocs.io/en/stable/operator-manual/disaster_recovery/) |
+| **RBAC** | Who can sync what, per project — the control that makes shared clusters safe | [Argo CD RBAC](https://argo-cd.readthedocs.io/en/stable/operator-manual/rbac/) |
+| **Progressive delivery** | Canary and blue-green with automated metric analysis and rollback | [Argo Rollouts](https://argo-rollouts.readthedocs.io/en/stable/) · [Flagger](https://flagger.app/) |
+| **Reference** | The operator manual is the half that matters once you run it | [Argo CD Documentation](https://argo-cd.readthedocs.io/en/stable/) |
+
+### Helm & Kustomize
+
+| Topic | Why it matters in production | Resource |
+| ----- | ---------------------------- | -------- |
+| **Chart best practices** | Values naming, labels, and the conventions that keep charts upgradable | [Helm Chart Best Practices](https://helm.sh/docs/chart_best_practices/) |
+| **Library charts** | Share boilerplate across services without copy-pasting templates | [Library Charts](https://helm.sh/docs/topics/library_charts/) |
+| **Chart CI** | Lint and install-test charts on every PR | [chart-testing](https://github.com/helm/chart-testing) |
+| **Seeing what will change** | A real diff before an upgrade, which `helm upgrade` alone does not give you | [helm-diff](https://github.com/databus23/helm-diff) |
+| **Kustomize overlays** | Per-environment patches with no templating language at all | [Kustomize Guides](https://kubectl.docs.kubernetes.io/guides/) · [Kustomize Reference](https://kubectl.docs.kubernetes.io/references/kustomize/) |
+| **Reference** | Template function and values reference | [Helm Documentation](https://helm.sh/docs/) |
+
+### Terraform / OpenTofu
+
+| Topic | Why it matters in production | Resource |
+| ----- | ---------------------------- | -------- |
+| **Style & structure** | The official conventions, now that there is an official style guide | [Terraform Style Guide](https://developer.hashicorp.com/terraform/language/style) |
+| **Module design** | Composable modules with clear inputs/outputs beat one giant root module | [Developing Modules](https://developer.hashicorp.com/terraform/language/modules/develop) |
+| **Remote state** | Locking and shared state; the first thing to fix after a `terraform.tfstate` in Git | [Remote State](https://developer.hashicorp.com/terraform/language/state/remote) |
+| **Secrets in state** | State files contain plaintext secrets — treat them as secrets | [Sensitive Data in State](https://developer.hashicorp.com/terraform/language/state/sensitive-data) |
+| **Team workflow** | PR-driven plan/apply with an audit trail, and DRY multi-environment layouts | [Atlantis](https://www.runatlantis.io/) · [Terragrunt](https://terragrunt.gruntwork.io/docs/) |
+| **Cloud guidance** | Google's practical best-practice guide applies well beyond GCP | [Best Practices for Terraform](https://cloud.google.com/docs/terraform/best-practices-for-terraform) |
+| **Security scanning** | Catch public buckets and open security groups in CI, not in production | [Checkov](https://www.checkov.io/) · [Trivy](https://github.com/aquasecurity/trivy) |
+| **Cluster & Vault provisioning** | Battle-tested module, and managing Vault policies as code | [terraform-aws-eks](https://github.com/terraform-aws-modules/terraform-aws-eks) · [Vault Provider](https://registry.terraform.io/providers/hashicorp/vault/latest/docs) |
+| **Reference** | Language and CLI reference for both forks | [Terraform Docs](https://developer.hashicorp.com/terraform/docs) · [OpenTofu Docs](https://opentofu.org/docs/) |
+
+### Service Mesh (Istio / Linkerd)
+
+| Topic | Why it matters in production | Resource |
+| ----- | ---------------------------- | -------- |
+| **Operational best practices** | Istio's own list of what breaks in real deployments | [Istio Ops Best Practices](https://istio.io/latest/docs/ops/best-practices/) |
+| **mTLS rollout** | Migrating to strict mTLS without an outage in the middle | [mTLS Migration](https://istio.io/latest/docs/tasks/security/authentication/mtls-migration/) |
+| **Traffic management** | The model behind retries, timeouts, outlier detection and mirroring | [Traffic Management Concepts](https://istio.io/latest/docs/concepts/traffic-management/) |
+| **Canary releases** | Weighted traffic shifting, the mesh-level counterpart to Argo Rollouts | [Traffic Shifting](https://istio.io/latest/docs/tasks/traffic-management/traffic-shifting/) |
+| **Sidecar-free mesh** | Ambient mode removes the per-pod sidecar tax; relevant if sidecar cost bites | [Istio Ambient](https://istio.io/latest/docs/ambient/) |
+| **Lighter alternative** | Linkerd trades features for far less operational surface | [Linkerd Docs](https://linkerd.io/docs/) · [Linkerd Tasks](https://linkerd.io/2.18/tasks/) |
+| **Reference** | Tasks and reference docs, versioned per release | [Istio Documentation](https://istio.io/latest/docs/) |
+
+### Platform practice
+
+- [The Twelve-Factor App](https://12factor.net/) — still the baseline contract between app and platform
+- [Google SRE Workbook](https://sre.google/workbook/table-of-contents/) — SLOs, alerting on burn rate, and on-call that works
+- [CNCF Landscape](https://landscape.cncf.io/) — when you need to know what else exists in a category
+- [CNCF Reports](https://www.cncf.io/reports/) — adoption data, useful for justifying a tool choice
+
 ## Recommended resources
 
 > All links below were last link-checked on 2026-11-06.
